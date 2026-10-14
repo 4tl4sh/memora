@@ -16,6 +16,7 @@ Maquetación con **Tailwind CSS v4** y **Vite** de la landing de mi TFM.
 | Hero | «Convierte tu temario en tests», dos botones, cifras e ilustración |
 | Tarjetas | 6 tests de ejemplo (Historia, Biología, Química, Matemáticas, Inglés, Derecho) |
 | Cómo funciona (3 pasos) | Sube tu temario → La IA te propone un test → Repásalo en el móvil |
+| Opiniones | Mini bento con 3 testimonios y 2 cifras. La misma tarjeta de testimonio sale en horizontal o en vertical según su celda (container queries) |
 | Planes con destacado | Gratis · **Estudiante** (Más popular) · Academia |
 | FAQ | 5 preguntas plegables |
 | Pie + newsletter | 4 columnas, redes, contacto y formulario de suscripción |
@@ -97,6 +98,30 @@ Tailwind genera `bg-marca-600` como `background-color: var(--color-marca-600)`. 
 
 El selector de la cabecera solo cambia `data-theme` en `<html>`; **el HTML no cambia**. Va en `@layer base` porque una capa posterior gana a una anterior (`base` va después de `theme`), sea cual sea la especificidad. Se combina con el modo oscuro: 3 temas × 2 modos.
 
+### Opiniones: mini bento (P6) con container queries (D2)
+
+**Bento (P6).** La rejilla es `grid sm:grid-cols-2 lg:grid-cols-3` y mezcla cajas de distintos tamaños:
+
+```
+┌───────────┬─────┐
+│           │ 4,8 │
+│   Lucía   ├─────┤
+│           │ +20k│
+├─────┬─────┴─────┤
+│Dani │   Marta   │
+└─────┴───────────┘
+```
+
+- Lucía ocupa 2 columnas y 2 filas (`sm:col-span-2 lg:row-span-2`), y Marta 2 columnas (`lg:col-span-2`).
+- Las dos cifras son cajas de una celda con fondo de marca y de acento.
+- No hace falta `grid-flow-dense`: con este orden en el HTML, la colocación automática ya llena la rejilla sin huecos, y el orden de lectura y de tabulación coincide con el visual.
+
+**Container queries (D2).** Las tres tarjetas de testimonio tienen **exactamente las mismas clases**. Cada `<li>` lleva `@container` y la tarjeta usa `@xl:flex-row`: se pone en horizontal cuando **su hueco** mide 36rem o más, no cuando la ventana es ancha.
+
+- En escritorio, Lucía y Marta están en celdas de 2 columnas y salen en horizontal; Daniel está en una celda de 1 columna y sale en vertical. En la misma pantalla conviven las dos versiones de la misma tarjeta.
+- En tablet pasa lo mismo: Lucía ocupa la fila entera (horizontal) y Daniel y Marta comparten fila (vertical). En móvil, las tres van en vertical.
+- Con `md:` o `lg:` esto no se podría hacer: todas las tarjetas cambiarían a la vez, porque la ventana es la misma para todas.
+
 ### Formulario con estados (P5)
 
 La newsletter del pie tiene `<label>` en cada campo y estilos `focus:`, `user-invalid:` y `disabled:`. El mensaje de error es un hermano del input y solo aparece con `peer-user-invalid:block`. Uso `user-invalid:` en lugar de `invalid:` para que el error **no salga nada más cargar**, sino después de que el usuario haya escrito algo. El botón se desactiva mientras el formulario no es válido.
@@ -154,13 +179,13 @@ Modo oscuro y temas:
 - [x] P3 · Planes con tarjeta destacada
 - [x] P4 · FAQ plegable sin JavaScript
 - [x] P5 · Formulario con estados
-- [ ] P6 · Bento grid
+- [x] P6 · Bento grid
 - [x] P7 · Animaciones con `motion-safe:`
 
 ### Desafíos
 
 - [ ] D1 · Menú hamburguesa sin JS
-- [ ] D2 · Container queries
+- [x] D2 · Container queries
 - [x] D3 · Multitema
 - [ ] D4 · Utilidades propias
 - [ ] D5 · Layout de aplicación
