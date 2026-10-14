@@ -245,10 +245,7 @@ Es un problema de jerarquía visual más que técnico, y por eso no salía en Li
 │   └── main.js         # Modo oscuro, tema y newsletter
 ├── public/             # Favicon, robots.txt e ilustraciones SVG
 ├── docs/
-│   ├── capturas/       # Capturas de este README
-│   ├── design.md       # Sistema de diseño del proyecto
-│   ├── paleta.md       # Cómo se generó y validó la paleta
-│   └── perceptual-color-palette.md
+│   └── capturas/       # Capturas de este README
 └── vite.config.js      # Plugin de Tailwind y precarga de fuentes
 ```
 
