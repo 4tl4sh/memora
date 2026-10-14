@@ -1,0 +1,1703 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memora · Convierte tu temario en tests</title>
+    <meta
+      name="description"
+      content="Sube tus apuntes, la IA te propone un test y lo repasas en el móvil hasta que te lo sepas. Empieza gratis."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      (() => {
+        const d = document.documentElement;
+        let oscuro = null,
+          tema = null;
+        try {
+          oscuro = localStorage.getItem("memora-oscuro");
+          tema = localStorage.getItem("memora-tema");
+        } catch {}
+        if (
+          oscuro === "1" ||
+          (oscuro === null &&
+            matchMedia("(prefers-color-scheme: dark)").matches)
+        ) {
+          d.classList.add("dark");
+        }
+        if (tema && tema !== "teal") d.dataset.theme = tema;
+      })();
+    </script>
+    <script type="module" src="/src/main.js"></script>
+  </head>
+  <body
+    data-page="landing"
+    class="bg-neutral-50 font-sans text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100"
+  >
+    <a
+      href="#contenido"
+      class="sr-only rounded-full bg-marca-600 px-5 py-3 font-semibold text-neutral-0 focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] dark:bg-marca-400 dark:text-marca-950"
+      >Saltar al contenido</a
+    >
+
+    <header
+      class="sticky top-0 z-50 border-b border-neutral-200/70 bg-neutral-50/75 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/75"
+    >
+      <div
+        class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 px-4 py-3 sm:px-6 lg:px-8"
+      >
+        <a
+          href="/"
+          class="flex items-center gap-2 rounded-lg font-display text-xl font-extrabold tracking-tight text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-0"
+          ><span
+            class="grid size-9 place-items-center rounded-xl bg-chispa-300 text-neutral-900"
+            ><svg
+              class="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 20v-9a4 4 0 0 1 8 0v9" />
+              <path d="M12 20v-9a4 4 0 0 1 8 0v9" /></svg></span
+          >Memora</a
+        >
+        <nav
+          aria-label="Principal"
+          class="order-last -mx-1 w-[calc(100%+0.5rem)] md:order-none md:mx-0 md:w-auto"
+        >
+          <ul class="flex flex-wrap items-center justify-between md:gap-1">
+            <li>
+              <a
+                class="rounded-full px-1 py-2 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 sm:px-3 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:hover:text-marca-300"
+                href="#ejemplos"
+                >Ejemplos</a
+              >
+            </li>
+            <li>
+              <a
+                class="rounded-full px-1 py-2 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 sm:px-3 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:hover:text-marca-300"
+                href="#como-funciona"
+                >Cómo funciona</a
+              >
+            </li>
+            <li>
+              <a
+                class="rounded-full px-1 py-2 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 sm:px-3 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:hover:text-marca-300"
+                href="#planes"
+                >Planes</a
+              >
+            </li>
+            <li>
+              <a
+                class="rounded-full px-1 py-2 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 sm:px-3 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:hover:text-marca-300"
+                href="#faq"
+                >FAQ</a
+              >
+            </li>
+            <li>
+              <a
+                class="rounded-full px-1 py-2 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 sm:px-3 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:hover:text-marca-300"
+                href="#"
+                >Entrar</a
+              >
+            </li>
+          </ul>
+        </nav>
+        <div class="flex items-center gap-2">
+          <label class="relative">
+            <span class="sr-only">Tema de color</span>
+            <select
+              data-theme-select
+              class="min-h-10 cursor-pointer rounded-full border border-neutral-300 bg-neutral-0 py-2 pr-3 pl-3 text-sm font-semibold text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50"
+            >
+              <option value="teal">Teal</option>
+              <option value="klein">Azul Klein</option>
+              <option value="amarillo">Amarillo</option>
+            </select>
+          </label>
+          <button
+            type="button"
+            data-toggle-dark
+            aria-pressed="false"
+            class="grid size-10 place-items-center rounded-full border border-neutral-300 bg-neutral-0 text-neutral-900 transition hover:border-marca-400 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:text-marca-300"
+          >
+            <svg
+              class="size-5 dark:hidden"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg
+            ><svg
+              class="hidden size-5 dark:block"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2" />
+              <path d="M12 20v2" />
+              <path d="m4.93 4.93 1.41 1.41" />
+              <path d="m17.66 17.66 1.41 1.41" />
+              <path d="M2 12h2" />
+              <path d="M20 12h2" />
+              <path d="m6.34 17.66-1.41 1.41" />
+              <path d="m19.07 4.93-1.41 1.41" /></svg
+            ><span class="sr-only">Modo oscuro</span>
+          </button>
+          <a
+            href="#planes"
+            class="hidden items-center justify-center gap-2 rounded-full bg-marca-600 px-4 py-2 text-sm font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 md:inline-flex dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
+            >Empieza gratis</a
+          >
+        </div>
+      </div>
+    </header>
+
+    <main id="contenido">
+      <section
+        aria-labelledby="titulo-hero"
+        class="relative overflow-hidden py-16 sm:py-24"
+      >
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-marca-200/50 blur-3xl dark:bg-marca-700/30"
+        ></div>
+        <div
+          class="relative mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 md:grid-cols-2 lg:px-8"
+        >
+          <div>
+            <p
+              class="inline-flex items-center gap-2 rounded-full bg-chispa-200 px-3 py-1 text-xs font-semibold text-neutral-900 motion-safe:animate-aparecer"
+            >
+              <svg
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path
+                  d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
+                />
+                <path d="M20 3v4" />
+                <path d="M22 5h-4" />
+                <path d="M4 17v2" />
+                <path d="M5 18H3" /></svg
+              >Ahora con generación por IA
+            </p>
+            <h1
+              id="titulo-hero"
+              class="mt-5 font-display text-4xl font-extrabold tracking-tight text-balance text-neutral-950 motion-safe:animate-aparecer motion-safe:[animation-delay:100ms] sm:text-5xl lg:text-6xl dark:text-neutral-0"
+            >
+              Convierte tu temario en tests
+            </h1>
+            <p
+              class="mt-5 max-w-prose text-lg text-pretty text-neutral-600 motion-safe:animate-aparecer motion-safe:[animation-delay:200ms] dark:text-neutral-300"
+            >
+              Sube tus apuntes, la IA te propone un test y tú lo repasas en el
+              móvil: en el autobús, en la cola o entre clases. Hasta que te lo
+              sepas.
+            </p>
+            <div
+              class="mt-8 flex flex-col gap-3 motion-safe:animate-aparecer motion-safe:[animation-delay:300ms] sm:flex-row"
+            >
+              <a
+                href="#"
+                class="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-6 py-3 font-semibold text-neutral-0 shadow-lg shadow-marca-600/25 transition duration-200 ease-out hover:bg-marca-700 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 motion-safe:hover:-translate-y-0.5 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
+                >Crea tu primer test<svg
+                  class="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" /></svg
+              ></a>
+              <a
+                href="#como-funciona"
+                class="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-neutral-0 px-6 py-3 font-semibold text-neutral-900 transition hover:border-marca-400 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:text-marca-300"
+                >Ver cómo funciona</a
+              >
+            </div>
+            <dl
+              class="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-neutral-200 pt-6 motion-safe:animate-aparecer motion-safe:[animation-delay:400ms] dark:border-neutral-800"
+            >
+              <div class="flex flex-col-reverse">
+                <dt class="text-xs text-neutral-600 dark:text-neutral-400">
+                  tests creados
+                </dt>
+                <dd
+                  class="font-display text-3xl font-bold text-neutral-950 dark:text-neutral-0"
+                >
+                  12.400
+                </dd>
+              </div>
+              <div class="flex flex-col-reverse">
+                <dt class="text-xs text-neutral-600 dark:text-neutral-400">
+                  preguntas al día
+                </dt>
+                <dd
+                  class="font-display text-3xl font-bold text-neutral-950 dark:text-neutral-0"
+                >
+                  38.000
+                </dd>
+              </div>
+              <div class="flex flex-col-reverse">
+                <dt class="text-xs text-neutral-600 dark:text-neutral-400">
+                  aprobados
+                </dt>
+                <dd
+                  class="font-display text-3xl font-bold text-neutral-950 dark:text-neutral-0"
+                >
+                  94 %
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <div class="relative mx-auto w-full max-w-md">
+            <img
+              src="/img/hero.svg"
+              alt="Unos apuntes con frases subrayadas se transforman en un test en el móvil, con una respuesta marcada como correcta."
+              width="640"
+              height="560"
+              fetchpriority="high"
+              class="w-full"
+            />
+            <p
+              class="absolute top-6 right-0 flex items-center gap-3 rounded-2xl border border-neutral-200 bg-neutral-0 p-3 pr-5 shadow-lg shadow-marca-600/25 motion-safe:animate-flotar dark:border-neutral-700 dark:bg-neutral-800"
+            >
+              <span
+                class="grid size-10 place-items-center rounded-full bg-chispa-300 text-neutral-900"
+                ><svg
+                  class="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"
+                  /></svg
+              ></span>
+              <span class="flex flex-col text-sm leading-tight"
+                ><strong
+                  class="font-display font-bold text-neutral-950 dark:text-neutral-0"
+                  >7 días de racha</strong
+                ><span class="text-neutral-600 dark:text-neutral-300"
+                  >Sigue así, Lucía</span
+                ></span
+              >
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="ejemplos"
+        aria-labelledby="titulo-ejemplos"
+        class="bg-neutral-0 py-16 sm:py-24 dark:bg-neutral-900"
+      >
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div class="max-w-2xl">
+            <p
+              class="text-sm font-semibold tracking-wider text-marca-700 uppercase dark:text-marca-300"
+            >
+              Ejemplos
+            </p>
+            <h2
+              id="titulo-ejemplos"
+              class="mt-3 font-display text-3xl font-bold tracking-tight text-balance text-neutral-950 sm:text-4xl dark:text-neutral-0"
+            >
+              Tests listos para repasar
+            </h2>
+            <p
+              class="mt-4 text-lg text-pretty text-neutral-600 dark:text-neutral-300"
+            >
+              Elige uno y pruébalo ahora. Así se ve un test generado a partir de
+              unos apuntes.
+            </p>
+          </div>
+          <ul
+            class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            <li>
+              <article
+                class="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-0 shadow-sm transition duration-300 hover:shadow-xl motion-safe:hover:-translate-y-1 dark:border-neutral-700 dark:bg-neutral-800"
+              >
+                <div class="overflow-hidden">
+                  <img
+                    src="/img/historia.svg"
+                    alt=""
+                    width="640"
+                    height="360"
+                    loading="lazy"
+                    class="aspect-video w-full object-cover duration-500 motion-safe:group-hover:scale-105"
+                  />
+                </div>
+                <div class="flex flex-1 flex-col p-5">
+                  <p class="flex flex-wrap items-center gap-2">
+                    <span
+                      class="rounded-full bg-marca-100 px-2.5 py-0.5 text-xs font-semibold text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      >Historia</span
+                    >
+                    <span class="text-xs text-neutral-600 dark:text-neutral-400"
+                      >Bachillerato</span
+                    >
+                  </p>
+                  <h3
+                    class="mt-3 font-display text-xl font-bold text-neutral-950 dark:text-neutral-0"
+                  >
+                    La Revolución Francesa
+                  </h3>
+                  <p
+                    class="mt-2 text-sm text-neutral-600 dark:text-neutral-400"
+                  >
+                    De la toma de la Bastilla al Directorio: fechas, causas y
+                    protagonistas.
+                  </p>
+                  <div
+                    class="mt-auto flex items-end justify-between gap-4 pt-5"
+                  >
+                    <dl class="flex gap-5">
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          preguntas
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-marca-700 dark:text-marca-300"
+                        >
+                          20
+                        </dd>
+                      </div>
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          duración
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-neutral-950 dark:text-neutral-0"
+                        >
+                          8<span class="text-base font-semibold"> min</span>
+                        </dd>
+                      </div>
+                    </dl>
+                    <a
+                      href="#"
+                      class="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-4 py-2 text-sm font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
+                      >Probar<span class="sr-only"
+                        >: La Revolución Francesa</span
+                      ></a
+                    >
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article
+                class="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-0 shadow-sm transition duration-300 hover:shadow-xl motion-safe:hover:-translate-y-1 dark:border-neutral-700 dark:bg-neutral-800"
+              >
+                <div class="overflow-hidden">
+                  <img
+                    src="/img/biologia.svg"
+                    alt=""
+                    width="640"
+                    height="360"
+                    loading="lazy"
+                    class="aspect-video w-full object-cover duration-500 motion-safe:group-hover:scale-105"
+                  />
+                </div>
+                <div class="flex flex-1 flex-col p-5">
+                  <p class="flex flex-wrap items-center gap-2">
+                    <span
+                      class="rounded-full bg-marca-100 px-2.5 py-0.5 text-xs font-semibold text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      >Biología</span
+                    >
+                    <span class="text-xs text-neutral-600 dark:text-neutral-400"
+                      >2.º Bachillerato</span
+                    >
+                  </p>
+                  <h3
+                    class="mt-3 font-display text-xl font-bold text-neutral-950 dark:text-neutral-0"
+                  >
+                    El corazón y la circulación
+                  </h3>
+                  <p
+                    class="mt-2 text-sm text-neutral-600 dark:text-neutral-400"
+                  >
+                    Cámaras, válvulas y recorrido de la sangre, con preguntas de
+                    respuesta múltiple.
+                  </p>
+                  <div
+                    class="mt-auto flex items-end justify-between gap-4 pt-5"
+                  >
+                    <dl class="flex gap-5">
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          preguntas
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-marca-700 dark:text-marca-300"
+                        >
+                          15
+                        </dd>
+                      </div>
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          duración
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-neutral-950 dark:text-neutral-0"
+                        >
+                          6<span class="text-base font-semibold"> min</span>
+                        </dd>
+                      </div>
+                    </dl>
+                    <a
+                      href="#"
+                      class="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-4 py-2 text-sm font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
+                      >Probar<span class="sr-only"
+                        >: El corazón y la circulación</span
+                      ></a
+                    >
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article
+                class="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-0 shadow-sm transition duration-300 hover:shadow-xl motion-safe:hover:-translate-y-1 dark:border-neutral-700 dark:bg-neutral-800"
+              >
+                <div class="overflow-hidden">
+                  <img
+                    src="/img/quimica.svg"
+                    alt=""
+                    width="640"
+                    height="360"
+                    loading="lazy"
+                    class="aspect-video w-full object-cover duration-500 motion-safe:group-hover:scale-105"
+                  />
+                </div>
+                <div class="flex flex-1 flex-col p-5">
+                  <p class="flex flex-wrap items-center gap-2">
+                    <span
+                      class="rounded-full bg-marca-100 px-2.5 py-0.5 text-xs font-semibold text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      >Química</span
+                    >
+                    <span class="text-xs text-neutral-600 dark:text-neutral-400"
+                      >Universidad</span
+                    >
+                  </p>
+                  <h3
+                    class="mt-3 font-display text-xl font-bold text-neutral-950 dark:text-neutral-0"
+                  >
+                    Enlace y formulación inorgánica
+                  </h3>
+                  <p
+                    class="mt-2 text-sm text-neutral-600 dark:text-neutral-400"
+                  >
+                    Iónico, covalente y metálico, y los nombres que siempre se
+                    te cuelan.
+                  </p>
+                  <div
+                    class="mt-auto flex items-end justify-between gap-4 pt-5"
+                  >
+                    <dl class="flex gap-5">
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          preguntas
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-marca-700 dark:text-marca-300"
+                        >
+                          25
+                        </dd>
+                      </div>
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          duración
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-neutral-950 dark:text-neutral-0"
+                        >
+                          10<span class="text-base font-semibold"> min</span>
+                        </dd>
+                      </div>
+                    </dl>
+                    <a
+                      href="#"
+                      class="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-4 py-2 text-sm font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
+                      >Probar<span class="sr-only"
+                        >: Enlace y formulación inorgánica</span
+                      ></a
+                    >
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article
+                class="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-0 shadow-sm transition duration-300 hover:shadow-xl motion-safe:hover:-translate-y-1 dark:border-neutral-700 dark:bg-neutral-800"
+              >
+                <div class="overflow-hidden">
+                  <img
+                    src="/img/matematicas.svg"
+                    alt=""
+                    width="640"
+                    height="360"
+                    loading="lazy"
+                    class="aspect-video w-full object-cover duration-500 motion-safe:group-hover:scale-105"
+                  />
+                </div>
+                <div class="flex flex-1 flex-col p-5">
+                  <p class="flex flex-wrap items-center gap-2">
+                    <span
+                      class="rounded-full bg-marca-100 px-2.5 py-0.5 text-xs font-semibold text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      >Matemáticas</span
+                    >
+                    <span class="text-xs text-neutral-600 dark:text-neutral-400"
+                      >4.º ESO</span
+                    >
+                  </p>
+                  <h3
+                    class="mt-3 font-display text-xl font-bold text-neutral-950 dark:text-neutral-0"
+                  >
+                    Ecuaciones de segundo grado
+                  </h3>
+                  <p
+                    class="mt-2 text-sm text-neutral-600 dark:text-neutral-400"
+                  >
+                    Discriminante, soluciones y problemas con enunciado.
+                    Respuesta corta incluida.
+                  </p>
+                  <div
+                    class="mt-auto flex items-end justify-between gap-4 pt-5"
+                  >
+                    <dl class="flex gap-5">
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          preguntas
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-marca-700 dark:text-marca-300"
+                        >
+                          18
+                        </dd>
+                      </div>
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          duración
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-neutral-950 dark:text-neutral-0"
+                        >
+                          9<span class="text-base font-semibold"> min</span>
+                        </dd>
+                      </div>
+                    </dl>
+                    <a
+                      href="#"
+                      class="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-4 py-2 text-sm font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
+                      >Probar<span class="sr-only"
+                        >: Ecuaciones de segundo grado</span
+                      ></a
+                    >
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article
+                class="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-0 shadow-sm transition duration-300 hover:shadow-xl motion-safe:hover:-translate-y-1 dark:border-neutral-700 dark:bg-neutral-800"
+              >
+                <div class="overflow-hidden">
+                  <img
+                    src="/img/ingles.svg"
+                    alt=""
+                    width="640"
+                    height="360"
+                    loading="lazy"
+                    class="aspect-video w-full object-cover duration-500 motion-safe:group-hover:scale-105"
+                  />
+                </div>
+                <div class="flex flex-1 flex-col p-5">
+                  <p class="flex flex-wrap items-center gap-2">
+                    <span
+                      class="rounded-full bg-marca-100 px-2.5 py-0.5 text-xs font-semibold text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      >Inglés</span
+                    >
+                    <span class="text-xs text-neutral-600 dark:text-neutral-400"
+                      >B2</span
+                    >
+                  </p>
+                  <h3
+                    class="mt-3 font-display text-xl font-bold text-neutral-950 dark:text-neutral-0"
+                  >
+                    Phrasal verbs de uso diario
+                  </h3>
+                  <p
+                    class="mt-2 text-sm text-neutral-600 dark:text-neutral-400"
+                  >
+                    Cien verbos compuestos que suenan naturales en una
+                    conversación.
+                  </p>
+                  <div
+                    class="mt-auto flex items-end justify-between gap-4 pt-5"
+                  >
+                    <dl class="flex gap-5">
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          preguntas
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-marca-700 dark:text-marca-300"
+                        >
+                          30
+                        </dd>
+                      </div>
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          duración
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-neutral-950 dark:text-neutral-0"
+                        >
+                          10<span class="text-base font-semibold"> min</span>
+                        </dd>
+                      </div>
+                    </dl>
+                    <a
+                      href="#"
+                      class="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-4 py-2 text-sm font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
+                      >Probar<span class="sr-only"
+                        >: Phrasal verbs de uso diario</span
+                      ></a
+                    >
+                  </div>
+                </div>
+              </article>
+            </li>
+            <li>
+              <article
+                class="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-0 shadow-sm transition duration-300 hover:shadow-xl motion-safe:hover:-translate-y-1 dark:border-neutral-700 dark:bg-neutral-800"
+              >
+                <div class="overflow-hidden">
+                  <img
+                    src="/img/derecho.svg"
+                    alt=""
+                    width="640"
+                    height="360"
+                    loading="lazy"
+                    class="aspect-video w-full object-cover duration-500 motion-safe:group-hover:scale-105"
+                  />
+                </div>
+                <div class="flex flex-1 flex-col p-5">
+                  <p class="flex flex-wrap items-center gap-2">
+                    <span
+                      class="rounded-full bg-marca-100 px-2.5 py-0.5 text-xs font-semibold text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      >Derecho</span
+                    >
+                    <span class="text-xs text-neutral-600 dark:text-neutral-400"
+                      >Oposiciones</span
+                    >
+                  </p>
+                  <h3
+                    class="mt-3 font-display text-xl font-bold text-neutral-950 dark:text-neutral-0"
+                  >
+                    La Constitución española: Título I
+                  </h3>
+                  <p
+                    class="mt-2 text-sm text-neutral-600 dark:text-neutral-400"
+                  >
+                    Derechos y deberes fundamentales, artículo a artículo, con
+                    verdadero o falso.
+                  </p>
+                  <div
+                    class="mt-auto flex items-end justify-between gap-4 pt-5"
+                  >
+                    <dl class="flex gap-5">
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          preguntas
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-marca-700 dark:text-marca-300"
+                        >
+                          40
+                        </dd>
+                      </div>
+                      <div class="flex flex-col-reverse">
+                        <dt
+                          class="text-xs text-neutral-600 dark:text-neutral-400"
+                        >
+                          duración
+                        </dt>
+                        <dd
+                          class="font-display text-3xl font-bold text-neutral-950 dark:text-neutral-0"
+                        >
+                          15<span class="text-base font-semibold"> min</span>
+                        </dd>
+                      </div>
+                    </dl>
+                    <a
+                      href="#"
+                      class="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-4 py-2 text-sm font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
+                      >Probar<span class="sr-only"
+                        >: La Constitución española: Título I</span
+                      ></a
+                    >
+                  </div>
+                </div>
+              </article>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section
+        id="como-funciona"
+        aria-labelledby="titulo-pasos"
+        class="py-16 sm:py-24"
+      >
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div class="mx-auto max-w-2xl text-center">
+            <p
+              class="text-sm font-semibold tracking-wider text-marca-700 uppercase dark:text-marca-300"
+            >
+              Cómo funciona
+            </p>
+            <h2
+              id="titulo-pasos"
+              class="mt-3 font-display text-3xl font-bold tracking-tight text-balance text-neutral-950 sm:text-4xl dark:text-neutral-0"
+            >
+              De los apuntes al test en tres pasos
+            </h2>
+          </div>
+          <ol class="relative mt-14 flex flex-col gap-12 md:flex-row md:gap-8">
+            <li
+              aria-hidden="true"
+              class="absolute top-10 right-1/6 left-1/6 hidden border-t-2 border-dashed border-marca-300 md:block dark:border-marca-700"
+            ></li>
+
+            <li
+              class="flex flex-1 flex-col items-center justify-center text-center"
+            >
+              <span
+                class="relative z-10 grid size-20 place-items-center rounded-full bg-marca-600 text-neutral-0 ring-8 ring-neutral-0 dark:bg-marca-400 dark:text-marca-950 dark:ring-neutral-900"
+                ><svg
+                  class="size-9"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
+                  />
+                  <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                  <path d="M12 12v6" />
+                  <path d="m9 15 3-3 3 3" /></svg
+              ></span>
+              <p
+                class="mt-5 text-sm font-semibold tracking-wider text-marca-700 uppercase dark:text-marca-300"
+              >
+                Paso 1
+              </p>
+              <h3
+                class="mt-2 font-display text-xl font-bold text-neutral-950 dark:text-neutral-0"
+              >
+                Sube tu temario
+              </h3>
+              <p
+                class="mt-2 max-w-xs text-sm text-neutral-600 dark:text-neutral-400"
+              >
+                Pega el texto de tus apuntes o sube un PDF. También puedes
+                empezar un test en blanco.
+              </p>
+            </li>
+
+            <li
+              class="flex flex-1 flex-col items-center justify-center text-center"
+            >
+              <span
+                class="relative z-10 grid size-20 place-items-center rounded-full bg-marca-600 text-neutral-0 ring-8 ring-neutral-0 dark:bg-marca-400 dark:text-marca-950 dark:ring-neutral-900"
+                ><svg
+                  class="size-9"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
+                  />
+                  <path d="M20 3v4" />
+                  <path d="M22 5h-4" />
+                  <path d="M4 17v2" />
+                  <path d="M5 18H3" /></svg
+              ></span>
+              <p
+                class="mt-5 text-sm font-semibold tracking-wider text-marca-700 uppercase dark:text-marca-300"
+              >
+                Paso 2
+              </p>
+              <h3
+                class="mt-2 font-display text-xl font-bold text-neutral-950 dark:text-neutral-0"
+              >
+                La IA te propone un test
+              </h3>
+              <p
+                class="mt-2 max-w-xs text-sm text-neutral-600 dark:text-neutral-400"
+              >
+                Eliges cuántas preguntas y de qué tipos. En unos segundos tienes
+                una propuesta que puedes revisar.
+              </p>
+            </li>
+
+            <li
+              class="flex flex-1 flex-col items-center justify-center text-center"
+            >
+              <span
+                class="relative z-10 grid size-20 place-items-center rounded-full bg-marca-600 text-neutral-0 ring-8 ring-neutral-0 dark:bg-marca-400 dark:text-marca-950 dark:ring-neutral-900"
+                ><svg
+                  class="size-9"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+                  <path d="M12 18h.01" /></svg
+              ></span>
+              <p
+                class="mt-5 text-sm font-semibold tracking-wider text-marca-700 uppercase dark:text-marca-300"
+              >
+                Paso 3
+              </p>
+              <h3
+                class="mt-2 font-display text-xl font-bold text-neutral-950 dark:text-neutral-0"
+              >
+                Repásalo en el móvil
+              </h3>
+              <p
+                class="mt-2 max-w-xs text-sm text-neutral-600 dark:text-neutral-400"
+              >
+                Hazlo cuantas veces quieras. Memora te dice qué fallas para que
+                insistas ahí.
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section
+        id="planes"
+        aria-labelledby="titulo-planes"
+        class="bg-neutral-0 py-16 sm:py-24 dark:bg-neutral-900"
+      >
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div class="mx-auto max-w-2xl text-center">
+            <p
+              class="text-sm font-semibold tracking-wider text-marca-700 uppercase dark:text-marca-300"
+            >
+              Planes
+            </p>
+            <h2
+              id="titulo-planes"
+              class="mt-3 font-display text-3xl font-bold tracking-tight text-balance text-neutral-950 sm:text-4xl dark:text-neutral-0"
+            >
+              Empieza gratis, crece cuando quieras
+            </h2>
+            <p
+              class="mt-4 text-lg text-pretty text-neutral-600 dark:text-neutral-300"
+            >
+              Sin permanencia. Cambia de plan o cancela cuando te venga bien.
+            </p>
+          </div>
+          <ul class="mt-14 grid items-center gap-6 lg:grid-cols-3">
+            <li class="">
+              <article
+                class="flex h-full flex-col rounded-3xl border border-neutral-200 bg-neutral-50 p-6 sm:p-8 dark:border-neutral-700 dark:bg-neutral-800"
+              >
+                <h3
+                  class="font-display text-2xl font-bold text-neutral-950 dark:text-neutral-0"
+                >
+                  Gratis
+                </h3>
+                <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                  Para probar Memora con tu próximo examen.
+                </p>
+                <p
+                  class="mt-6 flex items-baseline gap-1 text-neutral-950 dark:text-neutral-0"
+                >
+                  <span class="font-display text-5xl font-bold">0</span
+                  ><span
+                    class="text-sm font-semibold text-neutral-600 dark:text-neutral-300"
+                    >€/mes</span
+                  >
+                </p>
+                <ul class="mt-6 flex flex-1 flex-col gap-3 text-sm">
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      ><svg
+                        class="size-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" /></svg></span
+                    ><span>3 tests guardados</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      ><svg
+                        class="size-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" /></svg></span
+                    ><span>50 preguntas con IA al mes</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      ><svg
+                        class="size-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" /></svg></span
+                    ><span>Respuesta única y verdadero/falso</span>
+                  </li>
+                </ul>
+                <a
+                  href="#"
+                  class="mt-8 inline-flex w-full items-center justify-center rounded-full border border-neutral-300 bg-neutral-0 px-6 py-3 font-semibold text-neutral-900 transition hover:border-marca-400 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:text-marca-300"
+                  >Empezar<span class="sr-only"> con el plan Gratis</span></a
+                >
+              </article>
+            </li>
+
+            <li class="mt-4 lg:mt-0">
+              <article
+                class="relative flex h-full flex-col rounded-3xl bg-marca-900 p-6 text-marca-50 shadow-2xl ring-2 ring-marca-500 sm:p-8 lg:py-12"
+              >
+                <p
+                  class="absolute -top-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-chispa-300 px-4 py-1.5 text-xs font-semibold whitespace-nowrap text-neutral-900"
+                >
+                  <svg
+                    class="size-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"
+                    />
+                    <path d="M20 3v4" />
+                    <path d="M22 5h-4" />
+                    <path d="M4 17v2" />
+                    <path d="M5 18H3" /></svg
+                  >Más popular
+                </p>
+                <h3 class="font-display text-2xl font-bold text-neutral-0">
+                  Estudiante
+                </h3>
+                <p class="mt-1 text-sm text-marca-100">
+                  Todo lo que necesitas para llegar al examen sabiéndotelo.
+                </p>
+                <p class="mt-6 flex items-baseline gap-1 text-neutral-0">
+                  <span class="font-display text-5xl font-bold">4,99</span
+                  ><span class="text-sm font-semibold text-marca-100"
+                    >€/mes</span
+                  >
+                </p>
+                <ul class="mt-6 flex flex-1 flex-col gap-3 text-sm">
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-chispa-300 text-neutral-900"
+                      ><svg
+                        class="size-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" /></svg></span
+                    ><span>Tests ilimitados</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-chispa-300 text-neutral-900"
+                      ><svg
+                        class="size-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" /></svg></span
+                    ><span>1.000 preguntas con IA al mes</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-chispa-300 text-neutral-900"
+                      ><svg
+                        class="size-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" /></svg></span
+                    ><span>Todos los tipos de pregunta</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-chispa-300 text-neutral-900"
+                      ><svg
+                        class="size-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" /></svg></span
+                    ><span>Repaso espaciado y estadísticas</span>
+                  </li>
+                </ul>
+                <a
+                  href="#"
+                  class="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-chispa-300 px-6 py-3 font-semibold text-neutral-900 transition duration-200 ease-out hover:bg-chispa-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-chispa-300 motion-safe:hover:-translate-y-0.5"
+                  >Elegir Estudiante<span class="sr-only">
+                    con el plan Estudiante</span
+                  ></a
+                >
+              </article>
+            </li>
+
+            <li class="">
+              <article
+                class="flex h-full flex-col rounded-3xl border border-neutral-200 bg-neutral-50 p-6 sm:p-8 dark:border-neutral-700 dark:bg-neutral-800"
+              >
+                <h3
+                  class="font-display text-2xl font-bold text-neutral-950 dark:text-neutral-0"
+                >
+                  Academia
+                </h3>
+                <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+                  Para profesores y academias con grupos.
+                </p>
+                <p
+                  class="mt-6 flex items-baseline gap-1 text-neutral-950 dark:text-neutral-0"
+                >
+                  <span class="font-display text-5xl font-bold">19</span
+                  ><span
+                    class="text-sm font-semibold text-neutral-600 dark:text-neutral-300"
+                    >€/mes</span
+                  >
+                </p>
+                <ul class="mt-6 flex flex-1 flex-col gap-3 text-sm">
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      ><svg
+                        class="size-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" /></svg></span
+                    ><span>Todo lo de Estudiante</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      ><svg
+                        class="size-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" /></svg></span
+                    ><span>Comparte tests con hasta 40 alumnos</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span
+                      class="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                      ><svg
+                        class="size-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M20 6 9 17l-5-5" /></svg></span
+                    ><span>Resultados por alumno</span>
+                  </li>
+                </ul>
+                <a
+                  href="#"
+                  class="mt-8 inline-flex w-full items-center justify-center rounded-full border border-neutral-300 bg-neutral-0 px-6 py-3 font-semibold text-neutral-900 transition hover:border-marca-400 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:text-marca-300"
+                  >Elegir Academia<span class="sr-only">
+                    con el plan Academia</span
+                  ></a
+                >
+              </article>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="faq" aria-labelledby="titulo-faq" class="py-16 sm:py-24">
+        <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <p
+            class="text-sm font-semibold tracking-wider text-marca-700 uppercase dark:text-marca-300"
+          >
+            Preguntas frecuentes
+          </p>
+          <h2
+            id="titulo-faq"
+            class="mt-3 font-display text-3xl font-bold tracking-tight text-balance text-neutral-950 sm:text-4xl dark:text-neutral-0"
+          >
+            Lo que suelen preguntarnos
+          </h2>
+          <ul
+            class="mt-10 divide-y divide-neutral-200 border-y border-neutral-200 dark:divide-neutral-700 dark:border-neutral-700"
+          >
+            <li>
+              <details class="group py-5">
+                <summary
+                  class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-lg font-display text-lg font-bold text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-0 [&::-webkit-details-marker]:hidden"
+                >
+                  ¿Qué tengo que subir para crear un test?
+                  <span
+                    class="grid size-8 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                    ><svg
+                      class="size-4 group-open:rotate-180 motion-safe:transition-transform"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" /></svg
+                  ></span>
+                </summary>
+                <p
+                  class="mt-3 max-w-prose text-pretty text-neutral-600 dark:text-neutral-300"
+                >
+                  Pega el texto de tus apuntes o sube un PDF. Si prefieres
+                  hacerlo a mano, empieza un test en blanco y escribe tú las
+                  preguntas.
+                </p>
+              </details>
+            </li>
+            <li>
+              <details class="group py-5">
+                <summary
+                  class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-lg font-display text-lg font-bold text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-0 [&::-webkit-details-marker]:hidden"
+                >
+                  ¿Puedo cambiar las preguntas que propone la IA?
+                  <span
+                    class="grid size-8 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                    ><svg
+                      class="size-4 group-open:rotate-180 motion-safe:transition-transform"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" /></svg
+                  ></span>
+                </summary>
+                <p
+                  class="mt-3 max-w-prose text-pretty text-neutral-600 dark:text-neutral-300"
+                >
+                  Sí. La propuesta es un borrador: editas el enunciado y las
+                  respuestas, borras lo que no te convenza y añades las tuyas
+                  antes de guardar.
+                </p>
+              </details>
+            </li>
+            <li>
+              <details class="group py-5">
+                <summary
+                  class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-lg font-display text-lg font-bold text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-0 [&::-webkit-details-marker]:hidden"
+                >
+                  ¿Qué tipos de pregunta hay?
+                  <span
+                    class="grid size-8 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                    ><svg
+                      class="size-4 group-open:rotate-180 motion-safe:transition-transform"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" /></svg
+                  ></span>
+                </summary>
+                <p
+                  class="mt-3 max-w-prose text-pretty text-neutral-600 dark:text-neutral-300"
+                >
+                  Respuesta única, respuesta múltiple, verdadero o falso y
+                  respuesta corta. Tú eliges cuáles quieres al generar el test.
+                </p>
+              </details>
+            </li>
+            <li>
+              <details class="group py-5">
+                <summary
+                  class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-lg font-display text-lg font-bold text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-0 [&::-webkit-details-marker]:hidden"
+                >
+                  ¿Funciona bien desde el móvil?
+                  <span
+                    class="grid size-8 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                    ><svg
+                      class="size-4 group-open:rotate-180 motion-safe:transition-transform"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" /></svg
+                  ></span>
+                </summary>
+                <p
+                  class="mt-3 max-w-prose text-pretty text-neutral-600 dark:text-neutral-300"
+                >
+                  Está pensado para eso. Las opciones son grandes, el botón
+                  principal queda al alcance del pulgar y puedes repasar en
+                  cualquier momento.
+                </p>
+              </details>
+            </li>
+            <li>
+              <details class="group py-5">
+                <summary
+                  class="flex cursor-pointer list-none items-center justify-between gap-4 rounded-lg font-display text-lg font-bold text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-0 [&::-webkit-details-marker]:hidden"
+                >
+                  ¿Puedo cancelar cuando quiera?
+                  <span
+                    class="grid size-8 shrink-0 place-items-center rounded-full bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
+                    ><svg
+                      class="size-4 group-open:rotate-180 motion-safe:transition-transform"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" /></svg
+                  ></span>
+                </summary>
+                <p
+                  class="mt-3 max-w-prose text-pretty text-neutral-600 dark:text-neutral-300"
+                >
+                  Claro. No hay permanencia: puedes cambiar de plan o volver al
+                  gratuito en cualquier momento y conservas tus tests.
+                </p>
+              </details>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section aria-labelledby="titulo-cta" class="pb-16 sm:pb-24">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div
+            class="rounded-3xl bg-marca-900 px-6 py-14 text-center text-marca-50 shadow-2xl sm:px-12 sm:py-20"
+          >
+            <h2
+              id="titulo-cta"
+              class="mx-auto max-w-2xl font-display text-3xl font-extrabold tracking-tight text-balance text-neutral-0 sm:text-5xl"
+            >
+              Tu próximo examen empieza hoy
+            </h2>
+            <p class="mx-auto mt-4 max-w-xl text-lg text-pretty text-marca-100">
+              Crea tu primer test en menos de un minuto. Es gratis y no hace
+              falta tarjeta.
+            </p>
+            <a
+              href="#"
+              class="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-chispa-300 px-6 py-3 font-semibold text-neutral-900 transition duration-200 ease-out hover:bg-chispa-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-chispa-300 motion-safe:hover:-translate-y-0.5"
+              >Crear mi primer test<svg
+                class="size-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" /></svg
+            ></a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bg-neutral-900 text-neutral-300 dark:bg-neutral-950">
+      <div class="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <p
+              class="flex items-center gap-2 font-display text-xl font-extrabold tracking-tight text-neutral-0"
+            >
+              <span
+                class="grid size-9 place-items-center rounded-xl bg-chispa-300 text-neutral-900"
+                ><svg
+                  class="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4 20v-9a4 4 0 0 1 8 0v9" />
+                  <path d="M12 20v-9a4 4 0 0 1 8 0v9" /></svg></span
+              >Memora
+            </p>
+            <p class="mt-4 max-w-xs text-sm text-pretty">
+              Convierte tu temario en tests y repásalos en el móvil hasta que te
+              lo sepas.
+            </p>
+            <ul class="mt-6 flex gap-3">
+              <li>
+                <a
+                  href="#"
+                  class="grid size-10 place-items-center rounded-full border border-neutral-700 text-neutral-0 transition hover:border-chispa-300 hover:text-chispa-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                  ><svg
+                    class="size-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg
+                  ><span class="sr-only">Instagram</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="grid size-10 place-items-center rounded-full border border-neutral-700 text-neutral-0 transition hover:border-chispa-300 hover:text-chispa-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                  ><svg
+                    class="size-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"
+                    />
+                    <path d="m10 15 5-3-5-3z" /></svg
+                  ><span class="sr-only">YouTube</span></a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="grid size-10 place-items-center rounded-full border border-neutral-700 text-neutral-0 transition hover:border-chispa-300 hover:text-chispa-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                  ><svg
+                    class="size-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"
+                    />
+                    <rect width="4" height="12" x="2" y="9" />
+                    <circle cx="4" cy="4" r="2" /></svg
+                  ><span class="sr-only">LinkedIn</span></a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h2
+              class="text-sm font-semibold tracking-wider text-neutral-0 uppercase"
+            >
+              Producto
+            </h2>
+            <ul class="mt-4 flex flex-col gap-3 text-sm">
+              <li>
+                <a
+                  class="rounded text-neutral-300 transition hover:text-neutral-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                  href="#ejemplos"
+                  >Ejemplos</a
+                >
+              </li>
+              <li>
+                <a
+                  class="rounded text-neutral-300 transition hover:text-neutral-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                  href="#como-funciona"
+                  >Cómo funciona</a
+                >
+              </li>
+              <li>
+                <a
+                  class="rounded text-neutral-300 transition hover:text-neutral-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                  href="#planes"
+                  >Planes</a
+                >
+              </li>
+              <li>
+                <a
+                  class="rounded text-neutral-300 transition hover:text-neutral-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                  href="#faq"
+                  >Preguntas frecuentes</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h2
+              class="text-sm font-semibold tracking-wider text-neutral-0 uppercase"
+            >
+              Contacto
+            </h2>
+            <address class="mt-4 flex flex-col gap-3 text-sm not-italic">
+              <a
+                class="rounded text-neutral-300 transition hover:text-neutral-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                href="mailto:hola@memora.example"
+                >hola@memora.example</a
+              >
+              <a
+                class="rounded text-neutral-300 transition hover:text-neutral-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                href="tel:+34910000000"
+                >+34 910 000 000</a
+              >
+              <span>Calle del Temario, 12<br />28001 Madrid</span>
+            </address>
+          </div>
+          <div>
+            <h2
+              id="titulo-newsletter"
+              class="text-sm font-semibold tracking-wider text-neutral-0 uppercase"
+            >
+              Newsletter
+            </h2>
+            <p class="mt-4 text-sm">
+              Un correo al mes con trucos para estudiar mejor.
+            </p>
+            <form
+              data-form-newsletter
+              novalidate
+              class="mt-4 flex flex-col gap-3"
+              aria-labelledby="titulo-newsletter"
+            >
+              <div>
+                <label for="correo" class="text-sm font-semibold text-neutral-0"
+                  >Correo electrónico</label
+                >
+                <input
+                  id="correo"
+                  name="correo"
+                  type="email"
+                  required
+                  autocomplete="email"
+                  placeholder="lucia@correo.com"
+                  class="peer mt-1.5 block w-full rounded-xl border border-neutral-700 bg-neutral-950 px-4 py-2.5 text-neutral-0 placeholder:text-neutral-400 user-invalid:border-fallo-500 user-invalid:ring-2 user-invalid:ring-fallo-500/20 focus:border-marca-400 focus:ring-2 focus:ring-marca-400/30 focus:outline-none"
+                />
+                <p
+                  class="mt-1.5 hidden text-sm font-medium text-fallo-100 peer-user-invalid:block"
+                >
+                  Escribe un correo válido, por ejemplo lucia@correo.com.
+                </p>
+              </div>
+              <label class="flex items-start gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  name="acepto"
+                  required
+                  class="mt-0.5 size-5 shrink-0 rounded accent-marca-500"
+                />
+                <span
+                  >Acepto recibir el boletín y la política de privacidad.</span
+                >
+              </label>
+              <button
+                type="submit"
+                disabled
+                aria-describedby="ayuda-newsletter"
+                class="inline-flex items-center justify-center gap-2 rounded-full bg-chispa-300 px-6 py-3 font-semibold text-neutral-900 transition duration-200 ease-out hover:bg-chispa-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-chispa-300 disabled:cursor-not-allowed disabled:bg-neutral-700 disabled:text-neutral-300 disabled:hover:translate-y-0 motion-safe:hover:-translate-y-0.5"
+              >
+                Suscribirme
+              </button>
+              <p id="ayuda-newsletter" class="text-xs text-neutral-400">
+                El botón se activa cuando el correo es válido y aceptas.
+              </p>
+              <p
+                data-aviso
+                hidden
+                role="status"
+                class="rounded-xl bg-acierto-100 px-4 py-3 text-sm font-semibold text-acierto-700"
+              >
+                ¡Hecho! Te hemos apuntado a la newsletter.
+              </p>
+            </form>
+          </div>
+        </div>
+        <div
+          class="mt-12 flex flex-col gap-3 border-t border-neutral-800 pt-6 text-xs text-neutral-400 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p>
+            © 2026 Memora. Proyecto formativo: los datos y precios son
+            inventados.
+          </p>
+          <ul class="flex gap-5">
+            <li>
+              <a
+                class="rounded !text-neutral-400 text-neutral-300 transition hover:text-neutral-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                href="#"
+                >Privacidad</a
+              >
+            </li>
+            <li>
+              <a
+                class="rounded !text-neutral-400 text-neutral-300 transition hover:text-neutral-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                href="#"
+                >Términos</a
+              >
+            </li>
+            <li>
+              <a
+                class="rounded !text-neutral-400 text-neutral-300 transition hover:text-neutral-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-0"
+                href="#"
+                >Cookies</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

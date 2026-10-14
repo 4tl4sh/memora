@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-marca-50: oklch(0.978 0.028 185);
+  --color-marca-100: oklch(0.951 0.056 185);
+  --color-marca-200: oklch(0.908 0.096 185);
+  --color-marca-300: oklch(0.845 0.144 185);
+  --color-marca-400: oklch(0.754 0.128 185);
+  --color-marca-500: oklch(0.645 0.11 185);
+  --color-marca-600: oklch(0.536 0.091 185);
+  --color-marca-700: oklch(0.446 0.076 185);
+  --color-marca-800: oklch(0.367 0.062 185);
+  --color-marca-900: oklch(0.288 0.049 185);
+  --color-marca-950: oklch(0.208 0.035 185);
+
+  --color-chispa-50: oklch(0.979 0.03 125);
+  --color-chispa-100: oklch(0.953 0.061 125);
+  --color-chispa-200: oklch(0.912 0.105 125);
+  --color-chispa-300: oklch(0.852 0.158 125);
+  --color-chispa-400: oklch(0.757 0.184 125);
+  --color-chispa-500: oklch(0.648 0.157 125);
+  --color-chispa-600: oklch(0.538 0.131 125);
+  --color-chispa-700: oklch(0.448 0.109 125);
+  --color-chispa-800: oklch(0.369 0.089 125);
+  --color-chispa-900: oklch(0.289 0.07 125);
+  --color-chispa-950: oklch(0.209 0.05 125);
+
+  --color-acierto-50: oklch(0.978 0.028 150);
+  --color-acierto-100: oklch(0.952 0.056 150);
+  --color-acierto-200: oklch(0.909 0.096 150);
+  --color-acierto-300: oklch(0.847 0.144 150);
+  --color-acierto-400: oklch(0.749 0.184 150);
+  --color-acierto-500: oklch(0.64 0.17 150);
+  --color-acierto-600: oklch(0.532 0.142 150);
+  --color-acierto-700: oklch(0.443 0.118 150);
+  --color-acierto-800: oklch(0.364 0.097 150);
+  --color-acierto-900: oklch(0.285 0.076 150);
+  --color-acierto-950: oklch(0.207 0.055 150);
+
+  --color-fallo-50: oklch(0.982 0.008 27);
+  --color-fallo-100: oklch(0.96 0.019 27);
+  --color-fallo-200: oklch(0.924 0.037 27);
+  --color-fallo-300: oklch(0.87 0.067 27);
+  --color-fallo-400: oklch(0.783 0.122 27);
+  --color-fallo-500: oklch(0.682 0.2 27);
+  --color-fallo-600: oklch(0.573 0.22 27);
+  --color-fallo-700: oklch(0.479 0.189 27);
+  --color-fallo-800: oklch(0.394 0.155 27);
+  --color-fallo-900: oklch(0.308 0.118 27);
+  --color-fallo-950: oklch(0.223 0.083 27);
+
+  --color-info-50: oklch(0.981 0.01 235);
+  --color-info-100: oklch(0.957 0.023 235);
+  --color-info-200: oklch(0.918 0.045 235);
+  --color-info-300: oklch(0.858 0.079 235);
+  --color-info-400: oklch(0.763 0.138 235);
+  --color-info-500: oklch(0.652 0.134 235);
+  --color-info-600: oklch(0.542 0.111 235);
+  --color-info-700: oklch(0.452 0.093 235);
+  --color-info-800: oklch(0.371 0.076 235);
+  --color-info-900: oklch(0.291 0.059 235);
+  --color-info-950: oklch(0.211 0.043 235);
+
+  --color-neutral-0: oklch(1 0 0);
+  --color-neutral-50: oklch(0.982 0.004 65);
+  --color-neutral-100: oklch(0.958 0.007 65);
+  --color-neutral-200: oklch(0.921 0.009 65);
+  --color-neutral-300: oklch(0.863 0.011 65);
+  --color-neutral-400: oklch(0.77 0.013 65);
+  --color-neutral-500: oklch(0.659 0.014 65);
+  --color-neutral-600: oklch(0.547 0.014 65);
+  --color-neutral-700: oklch(0.456 0.013 65);
+  --color-neutral-800: oklch(0.375 0.011 65);
+  --color-neutral-900: oklch(0.294 0.009 65);
+  --color-neutral-950: oklch(0.213 0.007 65);
+  --color-neutral-1000: oklch(0 0 0);
+
+  --font-display:
+    "Bricolage Grotesque Variable", "Inter Variable", system-ui, sans-serif;
+  --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
+
+  --animate-aparecer: aparecer 0.6s ease-out both;
+  --animate-flotar: flotar 5s ease-in-out infinite;
+
+  @keyframes aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes flotar {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-0.75rem);
+    }
+  }
+}
+
+/* Temas: solo se redefine la escala marca-*; va en base porque base gana a theme */
+@layer base {
+  [data-theme="klein"] {
+    --color-marca-50: oklch(0.982 0.008 264);
+    --color-marca-100: oklch(0.958 0.019 264);
+    --color-marca-200: oklch(0.92 0.037 264);
+    --color-marca-300: oklch(0.863 0.064 264);
+    --color-marca-400: oklch(0.771 0.112 264);
+    --color-marca-500: oklch(0.664 0.172 264);
+    --color-marca-600: oklch(0.56 0.234 264);
+    --color-marca-700: oklch(0.478 0.264 264);
+    --color-marca-800: oklch(0.393 0.216 264);
+    --color-marca-900: oklch(0.306 0.162 264);
+    --color-marca-950: oklch(0.221 0.113 264);
+  }
+  [data-theme="amarillo"] {
+    --color-marca-50: oklch(0.981 0.028 95);
+    --color-marca-100: oklch(0.957 0.056 95);
+    --color-marca-200: oklch(0.919 0.096 95);
+    --color-marca-300: oklch(0.862 0.144 95);
+    --color-marca-400: oklch(0.769 0.153 95);
+    --color-marca-500: oklch(0.658 0.131 95);
+    --color-marca-600: oklch(0.546 0.108 95);
+    --color-marca-700: oklch(0.455 0.09 95);
+    --color-marca-800: oklch(0.374 0.074 95);
+    --color-marca-900: oklch(0.293 0.058 95);
+    --color-marca-950: oklch(0.213 0.042 95);
+  }
+
+  html {
+    scroll-padding-top: 6rem;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-marca-500);
+    outline-offset: 2px;
+  }
+}
