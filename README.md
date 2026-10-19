@@ -2,9 +2,9 @@
 
 Maquetación con **Tailwind CSS v4** y **Vite** de la landing de mi TFM.
 
-![Landing de Memora en escritorio](docs/capturas/landing-oscuro.webp)
+![Landing de Memora en escritorio](docs/capturas/landing-escritorio-oscuro.webp)
 
-## Tema elegido: 🅱️ la UI de mi TFM
+## Memora
 
 **Memora** es una aplicación web para estudiar con tests. Pegas tu temario o subes un PDF, eliges cuántas preguntas quieres y de qué tipos (respuesta única, múltiple, verdadero/falso o respuesta corta), y una IA te propone un test. Lo revisas, lo editas y lo repasas en el móvil tantas veces como quieras hasta que te lo sabes.
 
@@ -12,7 +12,7 @@ Maquetación con **Tailwind CSS v4** y **Vite** de la landing de mi TFM.
 
 | Pieza que pide el lab | Dónde está en la landing |
 | --- | --- |
-| Cabecera + menú | Logo, enlaces (Ejemplos, Cómo funciona, Planes, FAQ, Entrar), selector de tema, modo oscuro y «Empieza gratis». Hasta 1023 px, menú hamburguesa |
+| Cabecera + menú | Logo, enlaces (Ejemplos, Cómo funciona, Planes, Preguntas frecuentes, Entrar), selector de tema, modo oscuro y «Empieza gratis». Hasta 1023 px, menú hamburguesa |
 | Hero | «Convierte tu temario en tests», dos botones, cifras e ilustración |
 | Tarjetas | 6 tests de ejemplo (Historia, Biología, Química, Matemáticas, Inglés, Derecho) |
 | Cómo funciona (3 pasos) | Sube tu temario → La IA te propone un test → Repásalo en el móvil |
@@ -106,7 +106,7 @@ El selector de la cabecera solo cambia `data-theme` en `<html>`; **el HTML no ca
 ┌───────────┬─────┐
 │           │ 4,8 │
 │   Lucía   ├─────┤
-│           │ +20k│
+│           │ +12k│
 ├─────┬─────┴─────┤
 │Dani │   Marta   │
 └─────┴───────────┘
@@ -138,7 +138,7 @@ Todo lo que se mueve lleva `motion-safe:`: la entrada en cascada del hero (`anim
 - He revisado el contraste con **axe-core** en los 3 temas, en claro y en oscuro, a 390 y a 1280 px: **0 errores**. Lo hice porque Lighthouse solo mide el modo claro.
 - Ninguna imagen contiene texto.
 
-### Lighthouse
+## Lighthouse
 
 Medido sobre `npm run preview`, con emulación móvil:
 
@@ -148,15 +148,12 @@ Medido sobre `npm run preview`, con emulación móvil:
 
 ## Capturas
 
-| Escritorio | Móvil |
-| --- | --- |
-| <img src="docs/capturas/landing-escritorio.webp" alt="Landing completa en escritorio" width="600"> | <img src="docs/capturas/landing-movil.webp" alt="Landing completa en móvil" width="220"> |
+Tema Teal, a 1280 px (escritorio) y a 390 px (móvil). Muestran el hero y los tests de ejemplo.
 
-Modo oscuro y temas:
-
-| Oscuro (Teal) | Claro (Azul Klein) | Móvil oscuro (Amarillo) | Menú móvil |
-| --- | --- | --- | --- |
-| <img src="docs/capturas/landing-oscuro.webp" alt="Hero en modo oscuro con el tema Teal" width="300"> | <img src="docs/capturas/landing-klein.webp" alt="Hero en modo claro con el tema Azul Klein" width="300"> | <img src="docs/capturas/landing-amarillo-oscuro.webp" alt="Hero en móvil, modo oscuro, tema Amarillo" width="140"> | <img src="docs/capturas/landing-menu-movil.webp" alt="Menú hamburguesa abierto en móvil, con los enlaces, el tema de color y el modo oscuro" width="140"> |
+| | Claro | Oscuro |
+| --- | --- | --- |
+| **Escritorio** | <img src="docs/capturas/landing-escritorio-claro.webp" alt="Landing en escritorio, modo claro" width="400"> | <img src="docs/capturas/landing-escritorio-oscuro.webp" alt="Landing en escritorio, modo oscuro" width="400"> |
+| **Móvil** | <img src="docs/capturas/landing-movil-claro.webp" alt="Landing en móvil, modo claro" width="200"> | <img src="docs/capturas/landing-movil-oscuro.webp" alt="Landing en móvil, modo oscuro" width="200"> |
 
 ## Checklist
 
@@ -267,7 +264,7 @@ Es un problema de jerarquía visual más que técnico, y por eso no salía en Li
 ├── src/
 │   ├── fonts.css       # @font-face del subconjunto latino
 │   ├── style.css       # @import "tailwindcss" + @theme + temas
-│   └── main.js         # Modo oscuro, tema y newsletter
+│   └── main.js         # Modo oscuro, tema, menú y newsletter
 ├── public/             # Favicon, robots.txt e ilustraciones SVG
 ├── docs/
 │   └── capturas/       # Capturas de este README
