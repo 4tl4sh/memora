@@ -26,9 +26,29 @@ const precargarFuentes = () => ({
   },
 });
 
+// Hace que el build también se vea abriendo index.html con doble clic (file://):
+// los <script type="module"> y los recursos con crossorigin los bloquea el navegador desde file://.
+// El bundle no tiene import/export, así que se puede cargar como script clásico.
+const abrirDesdeFile = () => ({
+  name: "abrir-desde-file",
+  transformIndexHtml: {
+    order: "post",
+    handler(html, { bundle }) {
+      if (!bundle) return html;
+      return html
+        .replace(/(<script[^>]*?) type="module"/g, "$1 defer")
+        .replace(/(<script[^>]*?) crossorigin(?:="[^"]*")?/g, "$1")
+        .replace(
+          /(<link rel="stylesheet"[^>]*?) crossorigin(?:="[^"]*")?/g,
+          "$1",
+        );
+    },
+  },
+});
+
 export default defineConfig({
   base: "./",
-  plugins: [tailwindcss(), precargarFuentes()],
+  plugins: [tailwindcss(), precargarFuentes(), abrirDesdeFile()],
   build: {
     rolldownOptions: {
       input: {
