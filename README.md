@@ -148,12 +148,11 @@ Medido sobre `npm run preview`, con emulación móvil:
 
 ## Capturas
 
-Tema Teal, a 1280 px (escritorio) y a 390 px (móvil). Muestran el hero y los tests de ejemplo.
+Tema Teal. Escritorio a 1280 × 720 px y móvil a 390 × 844 px (el viewport de un teléfono, sin scroll). Muestran el hero.
 
-| | Claro | Oscuro |
-| --- | --- | --- |
-| **Escritorio** | <img src="docs/capturas/landing-escritorio-claro.webp" alt="Landing en escritorio, modo claro" width="400"> | <img src="docs/capturas/landing-escritorio-oscuro.webp" alt="Landing en escritorio, modo oscuro" width="400"> |
-| **Móvil** | <img src="docs/capturas/landing-movil-claro.webp" alt="Landing en móvil, modo claro" width="200"> | <img src="docs/capturas/landing-movil-oscuro.webp" alt="Landing en móvil, modo oscuro" width="200"> |
+| Escritorio, claro | Escritorio, oscuro | Móvil, claro | Móvil, oscuro |
+| --- | --- | --- | --- |
+| <img src="docs/capturas/landing-escritorio-claro.webp" alt="Landing en escritorio, modo claro" width="330"> | <img src="docs/capturas/landing-escritorio-oscuro.webp" alt="Landing en escritorio, modo oscuro" width="330"> | <img src="docs/capturas/landing-movil-claro.webp" alt="Landing en móvil, modo claro" width="150"> | <img src="docs/capturas/landing-movil-oscuro.webp" alt="Landing en móvil, modo oscuro" width="150"> |
 
 ## Checklist
 
