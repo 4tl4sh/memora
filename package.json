@@ -1,0 +1,18 @@
+{
+  "name": "tfm",
+  "private": true,
+  "packageManager": "pnpm@12.15.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "preview": "turbo run preview",
+    "generate-routes": "turbo run generate-routes",
+    "typecheck": "turbo run typecheck",
+    "db:up": "docker compose up -d mongodb",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f mongodb"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.10"
+  }
+}
