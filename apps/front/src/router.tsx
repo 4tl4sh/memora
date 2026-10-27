@@ -5,6 +5,8 @@ export function getRouter() {
   const router = createTanStackRouter({
     routeTree,
     scrollRestoration: true,
+    // Respeta la URL tal cual llega: /memora-landing/ no redirige a /memora-landing
+    trailingSlash: 'preserve',
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
   })

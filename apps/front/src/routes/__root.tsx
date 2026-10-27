@@ -3,6 +3,18 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import appCss from '../styles.css?url'
+// Las mismas fuentes que declara fonts.css: se precargan para no esperar al CSS
+import interFont from '../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url'
+import bricolageFont from '../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url'
+import { preferencesScript } from '#/hooks/use-preferences'
+
+const preloadFont = (href: string) => ({
+  rel: 'preload',
+  as: 'font',
+  type: 'font/woff2',
+  href,
+  crossOrigin: 'anonymous' as const,
+})
 
 export const Route = createRootRoute({
   head: () => ({
@@ -15,13 +27,20 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Memora',
       },
     ],
     links: [
+      preloadFont(interFont),
+      preloadFont(bricolageFont),
       {
         rel: 'stylesheet',
         href: appCss,
+      },
+      {
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: '/favicon.svg',
       },
     ],
   }),
@@ -30,11 +49,13 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    // El script de preferencias cambia la clase y data-theme de <html> antes de hidratar
+    <html lang="es" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: preferencesScript }} />
         <HeadContent />
       </head>
-      <body>
+      <body className="bg-neutral-50 font-sans text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100">
         {children}
         <TanStackDevtools
           config={{
