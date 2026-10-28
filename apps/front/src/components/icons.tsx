@@ -74,6 +74,44 @@ export const MenuIcon = (props: IconProps) => (
   </Icon>
 )
 
+export const ArrowRightIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M5 12h14" />
+    <path d="m12 5 7 7-7 7" />
+  </Icon>
+)
+
+export const FileUpIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+    <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+    <path d="M12 12v6" />
+    <path d="m9 15 3-3 3 3" />
+  </Icon>
+)
+
+export const SmartphoneIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+    <path d="M12 18h.01" />
+  </Icon>
+)
+
+export const UserIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="8" r="5" />
+    <path d="M20 21a8 8 0 0 0-16 0" />
+  </Icon>
+)
+
+export const LogOutIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <path d="m16 17 5-5-5-5" />
+    <path d="M21 12H9" />
+  </Icon>
+)
+
 export const CloseIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M18 6 6 18" />
