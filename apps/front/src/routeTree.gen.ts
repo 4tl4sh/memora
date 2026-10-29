@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MemoraLandingRouteImport } from './routes/memora-landing'
+import { Route as TestsIdRouteImport } from './routes/tests/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const MemoraLandingRoute = MemoraLandingRouteImport.update({
   path: '/memora-landing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TestsIdRoute = TestsIdRouteImport.update({
+  id: '/tests/$id',
+  path: '/tests/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/memora-landing': typeof MemoraLandingRoute
+  '/tests/$id': typeof TestsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/memora-landing': typeof MemoraLandingRoute
+  '/tests/$id': typeof TestsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/memora-landing': typeof MemoraLandingRoute
+  '/tests/$id': typeof TestsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/memora-landing'
+  fullPaths: '/' | '/memora-landing' | '/tests/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/memora-landing'
-  id: '__root__' | '/' | '/memora-landing'
+  to: '/' | '/memora-landing' | '/tests/$id'
+  id: '__root__' | '/' | '/memora-landing' | '/tests/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MemoraLandingRoute: typeof MemoraLandingRoute
+  TestsIdRoute: typeof TestsIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MemoraLandingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tests/$id': {
+      id: '/tests/$id'
+      path: '/tests/$id'
+      fullPath: '/tests/$id'
+      preLoaderRoute: typeof TestsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MemoraLandingRoute: MemoraLandingRoute,
+  TestsIdRoute: TestsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

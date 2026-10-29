@@ -69,3 +69,6 @@ export const deleteTest = (id: Test['id']) =>
 // En el servidor no hay localStorage: se pinta la lista vacía y se rellena al hidratar
 export const useTests = () =>
   useSyncExternalStore(subscribe, readTests, () => EMPTY)
+
+// Un test por id; undefined si no existe o aún no se ha hidratado
+export const useTest = (id: Test['id']) => useTests().find((t) => t.id === id)

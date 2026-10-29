@@ -8,11 +8,12 @@ import { TestsPanel } from '#/components/home/TestsPanel'
 import { SiteFooter } from '#/components/layout/SiteFooter'
 import { SiteHeader } from '#/components/layout/SiteHeader'
 import { UserMenu } from '#/components/layout/UserMenu'
-import { landingLinks } from '#/components/layout/nav-links'
+import { appFooterLinks } from '#/components/layout/nav-links'
 import {
   primaryButtonClass,
   secondaryButtonClass,
 } from '#/components/ui/buttons'
+import { clearUser, setUser, useUser } from '#/lib/session-storage'
 
 export const Route = createFileRoute('/')({
   head: () => ({
@@ -28,18 +29,12 @@ export const Route = createFileRoute('/')({
   component: Home,
 })
 
-// El pie enlaza a las secciones de la landing, que aquí no están
-const footerLinks = landingLinks.map((link) => ({
-  ...link,
-  href: `/memora-landing${link.href}`,
-}))
-
 // Registro: pendiente, de momento los botones no hacen nada
 const register = () => {}
 
 function Home() {
-  // Sesión simulada: solo vive en memoria, al recargar se pierde
-  const [user, setUser] = useState<string | null>(null)
+  // Sesión simulada: se guarda en localStorage (ver session-storage.ts)
+  const user = useUser()
   const [loginOpen, setLoginOpen] = useState(false)
   const loginButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -50,7 +45,7 @@ function Home() {
 
   // Tras cerrar sesión el menú de usuario desaparece: el foco vuelve al botón "Entrar"
   const logout = () => {
-    flushSync(() => setUser(null))
+    flushSync(() => clearUser())
     loginButtonRef.current?.focus()
   }
 
@@ -108,7 +103,7 @@ function Home() {
           )}
         </main>
       </div>
-      <SiteFooter links={footerLinks} />
+      <SiteFooter links={appFooterLinks} />
       <LoginDialog
         open={loginOpen}
         onClose={() => setLoginOpen(false)}

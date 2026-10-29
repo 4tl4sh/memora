@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 
 import { CreateTestDialog } from '#/components/home/CreateTestDialog'
 import { TestActionsMenu } from '#/components/home/TestActionsMenu'
@@ -7,12 +8,10 @@ import { SUBJECT_LABELS } from '#/components/landing/data'
 import { primaryButtonClass } from '#/components/ui/buttons'
 import { deleteTest, useTests } from '#/lib/tests-storage'
 
-// Realizar test: pendiente, aún no hay pantalla de repaso
-const startTest = () => {}
-
 // Panel del usuario con sesión iniciada: la lista de sus tests
 export function TestsPanel({ name }: { name: string }) {
   const tests = useTests()
+  const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
 
   const openCreate = () => setCreateOpen(true)
@@ -92,7 +91,12 @@ export function TestsPanel({ name }: { name: string }) {
               <TestActionsMenu
                 testId={test.id}
                 title={test.title}
-                onStart={startTest}
+                onStart={() =>
+                  navigate({
+                    to: '/tests/$id',
+                    params: { id: String(test.id) },
+                  })
+                }
                 onDelete={() => {
                   if (confirm(`¿Borrar el test «${test.title}»?`))
                     deleteTest(test.id)
