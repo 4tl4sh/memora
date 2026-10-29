@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import type { Question, Subject } from '@tfm/types'
+import type { Subject } from '@tfm/types'
 
 import { PdfDropzone } from '#/components/home/PdfDropzone'
 import {
@@ -12,7 +12,8 @@ import {
 import { SUBJECT_LABELS } from '#/components/landing/data'
 import { iconButtonClass, primaryButtonClass } from '#/components/ui/buttons'
 import { addTest } from '#/lib/tests-storage'
-import { pdfToText } from '#/server/pdf-to-text'
+import { QUESTION_COUNTS, generateTest } from '#/server/generate-test'
+import type { QuestionType } from '#/server/generate-test'
 
 interface CreateTestDialogProps {
   open: boolean
@@ -20,9 +21,6 @@ interface CreateTestDialogProps {
 }
 
 type Step = 'mode' | 'ai'
-type QuestionType = Extract<Question['type'], 'single' | 'multiple'>
-
-const QUESTION_COUNTS = [5, 10, 15] as const
 
 const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
   { value: 'single', label: 'Respuesta simple' },
@@ -76,32 +74,30 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!file || !type || !subject || loading) return
+    if (!file || !count || !type || !subject || loading) return
     setLoading(true)
     setError(null)
     try {
       const formData = new FormData()
       formData.append('file', file)
-      const { text, pages } = await pdfToText({ data: formData })
-      // Por ahora una sola pregunta con todo el texto; la IA repartirá el temario en `count` preguntas
-      const base = { id: 1, statement: text, options: [] }
-      const question: Question =
-        type === 'single'
-          ? { ...base, type, correctIndex: 0 }
-          : { ...base, type, correctIndexes: [] }
+      formData.append('count', String(count))
+      formData.append('type', type)
+      formData.append('subject', subject)
+      // El servidor extrae el texto y se lo pasa a la IA: aquí solo llegan las preguntas
+      const { title, pages, questions } = await generateTest({ data: formData })
       addTest({
-        title: file.name.replace(/\.pdf$/i, ''),
+        title: title || file.name.replace(/\.pdf$/i, ''),
         subject,
         status: 'private',
         source: { kind: 'pdf', fileName: file.name, pages },
-        questions: [question],
+        questions,
       })
       dialogRef.current?.close()
     } catch (err) {
       setError(
         err instanceof Error && err.message
           ? err.message
-          : 'No se pudo procesar el PDF. Inténtalo de nuevo.',
+          : 'No se pudo generar el test. Inténtalo de nuevo.',
       )
       setLoading(false)
     }
