@@ -25,8 +25,7 @@ type IconProps = SVGProps<SVGSVGElement>
 
 export const LogoIcon = (props: IconProps) => (
   <Icon {...props}>
-    <path d="M4 20v-9a4 4 0 0 1 8 0v9" />
-    <path d="M12 20v-9a4 4 0 0 1 8 0v9" />
+    <path d="M17 7.5A4 4 0 0 0 13 5h-2a3.5 3.5 0 0 0 0 7h2a3.5 3.5 0 0 1 0 7h-2a4 4 0 0 1-4-2.5" />
   </Icon>
 )
 

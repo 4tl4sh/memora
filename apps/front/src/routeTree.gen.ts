@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as MemoraLandingRouteImport } from './routes/memora-landing'
+import { Route as StudiaLandingRouteImport } from './routes/studia-landing'
 import { Route as TestsIdRouteImport } from './routes/tests/$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -18,9 +18,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MemoraLandingRoute = MemoraLandingRouteImport.update({
-  id: '/memora-landing',
-  path: '/memora-landing',
+const StudiaLandingRoute = StudiaLandingRouteImport.update({
+  id: '/studia-landing',
+  path: '/studia-landing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TestsIdRoute = TestsIdRouteImport.update({
@@ -31,31 +31,31 @@ const TestsIdRoute = TestsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/memora-landing': typeof MemoraLandingRoute
+  '/studia-landing': typeof StudiaLandingRoute
   '/tests/$id': typeof TestsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/memora-landing': typeof MemoraLandingRoute
+  '/studia-landing': typeof StudiaLandingRoute
   '/tests/$id': typeof TestsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/memora-landing': typeof MemoraLandingRoute
+  '/studia-landing': typeof StudiaLandingRoute
   '/tests/$id': typeof TestsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/memora-landing' | '/tests/$id'
+  fullPaths: '/' | '/studia-landing' | '/tests/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/memora-landing' | '/tests/$id'
-  id: '__root__' | '/' | '/memora-landing' | '/tests/$id'
+  to: '/' | '/studia-landing' | '/tests/$id'
+  id: '__root__' | '/' | '/studia-landing' | '/tests/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  MemoraLandingRoute: typeof MemoraLandingRoute
+  StudiaLandingRoute: typeof StudiaLandingRoute
   TestsIdRoute: typeof TestsIdRoute
 }
 
@@ -68,11 +68,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/memora-landing': {
-      id: '/memora-landing'
-      path: '/memora-landing'
-      fullPath: '/memora-landing'
-      preLoaderRoute: typeof MemoraLandingRouteImport
+    '/studia-landing': {
+      id: '/studia-landing'
+      path: '/studia-landing'
+      fullPath: '/studia-landing'
+      preLoaderRoute: typeof StudiaLandingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tests/$id': {
@@ -87,7 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  MemoraLandingRoute: MemoraLandingRoute,
+  StudiaLandingRoute: StudiaLandingRoute,
   TestsIdRoute: TestsIdRoute,
 }
 export const routeTree = rootRouteImport

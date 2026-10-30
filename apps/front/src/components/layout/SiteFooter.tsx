@@ -16,7 +16,7 @@ export function SiteFooter({ links = landingLinks }: { links?: NavLink[] }) {
               <span className="grid size-9 place-items-center rounded-xl bg-chispa-300 text-neutral-900">
                 <LogoIcon className="size-5" />
               </span>
-              Memora
+              Studia
             </p>
             <p className="mt-4 max-w-xs text-sm text-pretty">
               Convierte tu temario en tests y repásalos en el móvil hasta que te
@@ -109,8 +109,8 @@ export function SiteFooter({ links = landingLinks }: { links?: NavLink[] }) {
               Contacto
             </h2>
             <address className="mt-4 flex flex-col gap-3 text-sm not-italic">
-              <a className={linkClass} href="mailto:hola@memora.example">
-                hola@memora.example
+              <a className={linkClass} href="mailto:hola@studia.example">
+                hola@studia.example
               </a>{' '}
               <a className={linkClass} href="tel:+34910000000">
                 +34 910 000 000
@@ -126,7 +126,7 @@ export function SiteFooter({ links = landingLinks }: { links?: NavLink[] }) {
         </div>
         <div className="mt-12 flex flex-col gap-3 border-t border-neutral-800 pt-6 text-xs text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © 2026 Memora. Proyecto formativo: los datos y precios son
+            © 2026 Studia. Proyecto formativo: los datos y precios son
             inventados.
           </p>
           <ul className="flex gap-5">

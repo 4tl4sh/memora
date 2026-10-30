@@ -17,5 +17,5 @@ export const loginLink: NavLink = { href: '#', label: 'Entrar' }
 // Pie de las páginas de la app: enlaza a las secciones de la landing, que ahí no están
 export const appFooterLinks: NavLink[] = landingLinks.map((link) => ({
   ...link,
-  href: `/memora-landing${link.href}`,
+  href: `/studia-landing${link.href}`,
 }))

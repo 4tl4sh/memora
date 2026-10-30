@@ -20,7 +20,7 @@ interface BienvenidaProps {
   onLogin: () => void
 }
 
-// Resumen de la landing en una sola pantalla: presenta Memora e invita a registrarse
+// Resumen de la landing en una sola pantalla: presenta Studia e invita a registrarse
 export function Bienvenida({ onRegister, onLogin }: BienvenidaProps) {
   return (
     <section

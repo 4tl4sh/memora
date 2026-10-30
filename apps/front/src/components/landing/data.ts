@@ -101,7 +101,7 @@ export const plans: PlanCard[] = [
     pricePerMonth: 0,
     aiTestsPerMonth: 50,
     maxSavedTests: 3,
-    description: 'Para probar Memora con tu próximo examen.',
+    description: 'Para probar Studia con tu próximo examen.',
     features: [
       '3 tests guardados',
       '50 preguntas con IA al mes',

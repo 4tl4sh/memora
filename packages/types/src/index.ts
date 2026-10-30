@@ -1,4 +1,4 @@
-// Tipos de Memora: tests generados con IA a partir de un temario.
+// Tipos de Studia: tests generados con IA a partir de un temario.
 
 // ─── Uniones de literales ───────────────────────────────────────
 

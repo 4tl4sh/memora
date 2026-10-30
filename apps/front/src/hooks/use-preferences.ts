@@ -10,8 +10,8 @@ export const THEMES: { value: Theme; label: string }[] = [
   { value: 'amarillo', label: 'Amarillo' },
 ]
 
-const DARK_KEY = 'memora-oscuro'
-const THEME_KEY = 'memora-tema'
+const DARK_KEY = 'studia-oscuro'
+const THEME_KEY = 'studia-tema'
 
 const isTheme = (value: unknown): value is Theme =>
   THEMES.some((t) => t.value === value)

@@ -18,7 +18,7 @@ import { clearUser, setUser, useUser } from '#/lib/session-storage'
 export const Route = createFileRoute('/')({
   head: () => ({
     meta: [
-      { title: 'Memora · Convierte tu temario en tests' },
+      { title: 'Studia · Convierte tu temario en tests' },
       {
         name: 'description',
         content:

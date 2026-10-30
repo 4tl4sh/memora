@@ -27,7 +27,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Memora',
+        title: 'Studia',
       },
     ],
     links: [
@@ -40,7 +40,7 @@ export const Route = createRootRoute({
       {
         rel: 'icon',
         type: 'image/svg+xml',
-        href: '/favicon.svg',
+        href: '/favicon.svg?v=2',
       },
     ],
   }),

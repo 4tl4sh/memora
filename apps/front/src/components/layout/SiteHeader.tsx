@@ -81,7 +81,7 @@ export function SiteHeader({
             <span className="grid size-9 place-items-center rounded-xl bg-chispa-300 text-neutral-900">
               <LogoIcon className="size-5" />
             </span>
-            Memora
+            Studia
           </a>
           {navLinks.length > 0 && (
             <nav aria-label="Principal" className="hidden lg:block">

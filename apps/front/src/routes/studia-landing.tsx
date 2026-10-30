@@ -10,10 +10,10 @@ import { Hero } from '#/components/landing/Hero'
 import { Opiniones } from '#/components/landing/Opiniones'
 import { Planes } from '#/components/landing/Planes'
 
-export const Route = createFileRoute('/memora-landing')({
+export const Route = createFileRoute('/studia-landing')({
   head: () => ({
     meta: [
-      { title: 'Memora · Convierte tu temario en tests' },
+      { title: 'Studia · Convierte tu temario en tests' },
       {
         name: 'description',
         content:
@@ -21,13 +21,13 @@ export const Route = createFileRoute('/memora-landing')({
       },
     ],
   }),
-  component: MemoraLanding,
+  component: StudiaLanding,
 })
 
-function MemoraLanding() {
+function StudiaLanding() {
   return (
     <>
-      <SiteHeader homeHref="/memora-landing/" />
+      <SiteHeader homeHref="/studia-landing/" />
       <main id="contenido">
         <Hero />
         <Ejemplos />

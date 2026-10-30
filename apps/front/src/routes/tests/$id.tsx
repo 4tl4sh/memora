@@ -12,7 +12,7 @@ import { useTest } from '#/lib/tests-storage'
 
 export const Route = createFileRoute('/tests/$id')({
   head: () => ({
-    meta: [{ title: 'Realizar test · Memora' }],
+    meta: [{ title: 'Realizar test · Studia' }],
   }),
   component: TestPage,
 })

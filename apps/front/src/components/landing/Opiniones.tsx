@@ -14,7 +14,7 @@ export function Opiniones() {
             id="titulo-opiniones"
             className="mt-3 font-display text-3xl font-bold tracking-tight text-balance text-neutral-950 sm:text-4xl dark:text-neutral-0"
           >
-            Ya repasan con Memora
+            Ya repasan con Studia
           </h2>
           <p className="mt-4 text-lg text-pretty text-neutral-600 dark:text-neutral-300">
             Estudiantes, opositores y profesores que preparan sus exámenes con
@@ -55,7 +55,7 @@ export function Opiniones() {
                 4,8/5
               </span>{' '}
               <span className="mt-2 text-sm text-marca-100">
-                de valoración media entre quienes repasan con Memora
+                de valoración media entre quienes repasan con Studia
               </span>
             </p>
           </li>

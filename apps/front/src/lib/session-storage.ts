@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 // Sesión simulada: el nombre del usuario se guarda en localStorage para que
 // sobreviva al cambiar de página y al recargar. No hay servidor ni contraseña real.
 
-const USER_KEY = 'memora_user'
+const USER_KEY = 'studia_user'
 
 export const readUser = (): string | null => {
   try {

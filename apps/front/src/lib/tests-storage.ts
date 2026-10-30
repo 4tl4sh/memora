@@ -3,7 +3,7 @@ import type { NewTest, Test } from '@tfm/types'
 
 // Tests del usuario: de momento viven solo en localStorage, sin servidor.
 
-const TESTS_KEY = 'memora_tests'
+const TESTS_KEY = 'studia_tests'
 
 const EMPTY: Test[] = []
 

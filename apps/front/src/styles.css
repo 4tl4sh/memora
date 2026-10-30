@@ -1,4 +1,4 @@
-/* Estilos base de Memora para toda la aplicación (tokens, fuentes, temas y modo oscuro) */
+/* Estilos base de Studia para toda la aplicación (tokens, fuentes, temas y modo oscuro) */
 @import "tailwindcss";
 @import "./fonts.css";
 
@@ -145,7 +145,7 @@
   }
 }
 
-/* Variables semánticas de shadcn/ui apuntando a la paleta de Memora,
+/* Variables semánticas de shadcn/ui apuntando a la paleta de Studia,
    para que los componentes que se añadan sigan la marca y el tema activo */
 :root {
   --background: var(--color-neutral-50);

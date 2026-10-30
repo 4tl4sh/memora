@@ -104,7 +104,7 @@ export function ComoFunciona() {
               Repásalo en el móvil
             </h3>
             <p className="mt-2 max-w-xs text-sm text-neutral-600 dark:text-neutral-400">
-              Hazlo cuantas veces quieras. Memora te dice qué fallas para que
+              Hazlo cuantas veces quieras. Studia te dice qué fallas para que
               insistas ahí.
             </p>
           </li>
