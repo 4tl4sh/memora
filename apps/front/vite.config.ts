@@ -25,7 +25,6 @@ const config = defineConfig(({ mode }) => {
         // pdf-parse se carga tal cual desde node_modules: empaquetado pierde los
         // polyfills de Node (DOMMatrix…) y falla al leer el PDF
         traceDeps: ['pdf-parse*'],
-        rollupConfig: { external: [/^@sentry\//] },
       }),
       tailwindcss(),
       tanstackStart(),

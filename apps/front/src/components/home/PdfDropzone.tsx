@@ -3,7 +3,7 @@ import type { DragEvent } from 'react'
 
 import { CloseIcon, FileUpIcon } from '#/components/icons'
 import { iconButtonClass, secondaryButtonClass } from '#/components/ui/buttons'
-import { MAX_PDF_BYTES, isPdf } from '#/server/pdf-to-text'
+import { MAX_PDF_BYTES, isPdf } from '#/lib/pdf'
 
 interface PdfDropzoneProps {
   file: File | null

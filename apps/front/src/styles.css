@@ -1,9 +1,6 @@
 /* Estilos base de Memora para toda la aplicación (tokens, fuentes, temas y modo oscuro) */
 @import "tailwindcss";
 @import "./fonts.css";
-@plugin "@tailwindcss/typography";
-
-@import "tw-animate-css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 

@@ -2,7 +2,8 @@ import { createServerFn } from '@tanstack/react-start'
 import type { Question, Subject } from '@tfm/types'
 
 import { SUBJECT_LABELS } from '#/components/landing/data'
-import { MAX_PDF_BYTES, extractPdfText, isPdf } from '#/server/pdf-to-text'
+import { MAX_PDF_BYTES, isPdf } from '#/lib/pdf'
+import { extractPdfText } from '#/server/pdf-to-text'
 
 export type QuestionType = Extract<Question['type'], 'single' | 'multiple'>
 
@@ -12,11 +13,15 @@ const QUESTION_TYPES: QuestionType[] = ['single', 'multiple']
 
 const OPTIONS_PER_QUESTION = 4
 
-// Tope de texto enviado a la IA: un temario largo cabe de sobra en Gemini,
-// pero así no se gasta la cuota gratuita de tokens en una sola petición
-const MAX_TEXT_CHARS = 200_000
+// Tope de texto enviado a la IA (~15k tokens): sobra para 15 preguntas y cuanto
+// menos texto, antes responde Gemini y menos cuota gratuita se gasta
+const MAX_TEXT_CHARS = 60_000
 
-const DEFAULT_MODEL = 'gemini-3.8-flash'
+// Tope de respuesta: 15 preguntas con explicaciones cortas caben de sobra
+const MAX_OUTPUT_TOKENS = 4096
+
+// Lite: peor calidad que flash, pero mucho más rápido y menos saturado en el plan gratuito
+const DEFAULT_MODEL = 'gemini-flash-lite-latest'
 
 // Lo que se pide a Gemini: siempre correctIndexes, y luego se adapta al tipo elegido
 const RESPONSE_SCHEMA = {
@@ -58,7 +63,8 @@ const buildPrompt = (count: number, type: QuestionType, subject: Subject) => {
     `Cada pregunta tiene ${OPTIONS_PER_QUESTION} opciones y ${answers}.`,
     'correctIndexes son las posiciones (empezando en 0) de las opciones correctas.',
     'Usa solo información del temario, no repitas preguntas y reparte las preguntas por todo el contenido.',
-    'Añade una explicación breve de la respuesta correcta y un título corto (máximo 60 caracteres) para el test.',
+    'Enunciados y opciones concisos. Explicación de una sola frase (máximo 150 caracteres).',
+    'Añade un título corto (máximo 60 caracteres) para el test.',
   ].join('\n')
 }
 
@@ -135,24 +141,31 @@ export const generateTest = createServerFn({ method: 'POST' })
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) throw new Error('Falta configurar GEMINI_API_KEY en el servidor')
 
+    let start = Date.now()
     const { text, pages } = await extractPdfText(file)
+    console.info(`PDF a texto: ${Date.now() - start} ms (${pages} páginas)`)
     if (!text)
       throw new Error('El PDF no tiene texto seleccionable (¿es un documento escaneado?)')
 
     // Import dinámico: el SDK de Gemini solo hace falta en el servidor
-    const { GoogleGenAI } = await import('@google/genai')
+    const { GoogleGenAI, ThinkingLevel } = await import('@google/genai')
     const ai = new GoogleGenAI({ apiKey })
 
+    const model = process.env.GEMINI_MODEL || DEFAULT_MODEL
     let raw: string | undefined
+    start = Date.now()
     try {
       const response = await ai.models.generateContent({
-        model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
+        model,
         contents: `Temario:\n\n${text.slice(0, MAX_TEXT_CHARS)}`,
         config: {
           systemInstruction: buildPrompt(count, type, subject),
           responseMimeType: 'application/json',
           responseJsonSchema: RESPONSE_SCHEMA,
           temperature: 0.4,
+          maxOutputTokens: MAX_OUTPUT_TOKENS,
+          // Sin apenas razonamiento previo: es lo que más tiempo se llevaba
+          thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
         },
       })
       raw = response.text
@@ -160,6 +173,7 @@ export const generateTest = createServerFn({ method: 'POST' })
       console.error('Error de Gemini', err)
       throw new Error(aiErrorMessage(err))
     }
+    console.info(`Gemini (${model}): ${Date.now() - start} ms`)
 
     let parsed: { title?: unknown; questions?: unknown } = {}
     try {

@@ -1,8 +1,3 @@
-export const MAX_PDF_BYTES = 5 * 1024 * 1024
-
-export const isPdf = (file: File) =>
-  file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
-
 // Convierte el PDF a texto plano. Solo se llama desde el servidor (generate-test):
 // el texto no se devuelve al navegador.
 export const extractPdfText = async (file: File) => {
