@@ -160,7 +160,7 @@ export function TestRunner({ test }: { test: Test }) {
         correct={correct ?? 0}
         total={total}
         onReview={review}
-        onClose={() => navigate({ to: '/' })}
+        onClose={() => navigate({ to: '/studia/private/' })}
       />
     </section>
   )

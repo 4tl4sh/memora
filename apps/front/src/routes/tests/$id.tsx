@@ -26,7 +26,7 @@ function TestPage() {
 
   const logout = () => {
     clearUser()
-    navigate({ to: '/' })
+    navigate({ to: '/studia/' })
   }
 
   return (
@@ -34,7 +34,7 @@ function TestPage() {
       <div className="flex min-h-dvh flex-col">
         <SiteHeader
           links={[]}
-          homeHref="/"
+          homeHref="/studia/private/"
           actions={user && <UserMenu name={user} onLogout={logout} />}
         />
         <main id="contenido" className="flex flex-1 flex-col">
@@ -53,7 +53,10 @@ function TestPage() {
                     Puede que lo hayas borrado o que se creara en otro
                     navegador.
                   </p>
-                  <Link to="/" className={`${primaryButtonClass} mt-5`}>
+                  <Link
+                    to="/studia/private/"
+                    className={`${primaryButtonClass} mt-5`}
+                  >
                     Volver a tus tests
                   </Link>
                 </div>

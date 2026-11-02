@@ -1,7 +1,9 @@
 import { SparklesIcon } from '#/components/icons'
 import { heroStats } from './data'
+import { StartAction } from './StartAction'
+import type { StartProps } from './StartAction'
 
-export function Hero() {
+export function Hero(startProps: StartProps) {
   return (
     <section
       aria-labelledby="titulo-hero"
@@ -29,8 +31,8 @@ export function Hero() {
             sepas.
           </p>
           <div className="mt-8 flex flex-col gap-3 motion-safe:animate-aparecer motion-safe:[animation-delay:300ms] sm:flex-row">
-            <a
-              href="#"
+            <StartAction
+              {...startProps}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-6 py-3 font-semibold text-neutral-0 shadow-lg shadow-marca-600/25 transition duration-200 ease-out hover:bg-marca-700 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 motion-safe:hover:-translate-y-0.5 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
             >
               Crea tu primer test
@@ -47,7 +49,7 @@ export function Hero() {
                 <path d="M5 12h14" />
                 <path d="m12 5 7 7-7 7" />
               </svg>
-            </a>{' '}
+            </StartAction>{' '}
             <a
               href="#como-funciona"
               className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-neutral-0 px-6 py-3 font-semibold text-neutral-900 transition hover:border-marca-400 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:text-marca-300"

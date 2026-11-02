@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StudiaLandingRouteImport } from './routes/studia-landing'
+import { Route as StudiaIndexRouteImport } from './routes/studia/index'
+import { Route as StudiaPrivateRouteRouteImport } from './routes/studia/private/route'
 import { Route as TestsIdRouteImport } from './routes/tests/$id'
+import { Route as StudiaPrivateIndexRouteImport } from './routes/studia/private/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,40 +26,78 @@ const StudiaLandingRoute = StudiaLandingRouteImport.update({
   path: '/studia-landing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudiaIndexRoute = StudiaIndexRouteImport.update({
+  id: '/studia/',
+  path: '/studia/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudiaPrivateRouteRoute = StudiaPrivateRouteRouteImport.update({
+  id: '/studia/private',
+  path: '/studia/private',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TestsIdRoute = TestsIdRouteImport.update({
   id: '/tests/$id',
   path: '/tests/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudiaPrivateIndexRoute = StudiaPrivateIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => StudiaPrivateRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/studia-landing': typeof StudiaLandingRoute
+  '/studia/private': typeof StudiaPrivateRouteRouteWithChildren
   '/tests/$id': typeof TestsIdRoute
+  '/studia/': typeof StudiaIndexRoute
+  '/studia/private/': typeof StudiaPrivateIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/studia-landing': typeof StudiaLandingRoute
   '/tests/$id': typeof TestsIdRoute
+  '/studia': typeof StudiaIndexRoute
+  '/studia/private': typeof StudiaPrivateIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/studia-landing': typeof StudiaLandingRoute
+  '/studia/private': typeof StudiaPrivateRouteRouteWithChildren
   '/tests/$id': typeof TestsIdRoute
+  '/studia/': typeof StudiaIndexRoute
+  '/studia/private/': typeof StudiaPrivateIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/studia-landing' | '/tests/$id'
+  fullPaths:
+    | '/'
+    | '/studia-landing'
+    | '/studia/private'
+    | '/tests/$id'
+    | '/studia/'
+    | '/studia/private/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/studia-landing' | '/tests/$id'
-  id: '__root__' | '/' | '/studia-landing' | '/tests/$id'
+  to: '/' | '/studia-landing' | '/tests/$id' | '/studia' | '/studia/private'
+  id:
+    | '__root__'
+    | '/'
+    | '/studia-landing'
+    | '/studia/private'
+    | '/tests/$id'
+    | '/studia/'
+    | '/studia/private/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   StudiaLandingRoute: typeof StudiaLandingRoute
+  StudiaPrivateRouteRoute: typeof StudiaPrivateRouteRouteWithChildren
   TestsIdRoute: typeof TestsIdRoute
+  StudiaIndexRoute: typeof StudiaIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,6 +116,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudiaLandingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/studia/': {
+      id: '/studia/'
+      path: '/studia'
+      fullPath: '/studia/'
+      preLoaderRoute: typeof StudiaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/studia/private': {
+      id: '/studia/private'
+      path: '/studia/private'
+      fullPath: '/studia/private'
+      preLoaderRoute: typeof StudiaPrivateRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tests/$id': {
       id: '/tests/$id'
       path: '/tests/$id'
@@ -82,13 +137,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TestsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/studia/private/': {
+      id: '/studia/private/'
+      path: '/'
+      fullPath: '/studia/private/'
+      preLoaderRoute: typeof StudiaPrivateIndexRouteImport
+      parentRoute: typeof StudiaPrivateRouteRoute
+    }
   }
 }
+
+interface StudiaPrivateRouteRouteChildren {
+  StudiaPrivateIndexRoute: typeof StudiaPrivateIndexRoute
+}
+
+const StudiaPrivateRouteRouteChildren: StudiaPrivateRouteRouteChildren = {
+  StudiaPrivateIndexRoute: StudiaPrivateIndexRoute,
+}
+
+const StudiaPrivateRouteRouteWithChildren =
+  StudiaPrivateRouteRoute._addFileChildren(StudiaPrivateRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StudiaLandingRoute: StudiaLandingRoute,
+  StudiaPrivateRouteRoute: StudiaPrivateRouteRouteWithChildren,
   TestsIdRoute: TestsIdRoute,
+  StudiaIndexRoute: StudiaIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

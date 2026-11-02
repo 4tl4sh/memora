@@ -1,4 +1,7 @@
-export function Cta() {
+import { StartAction } from './StartAction'
+import type { StartProps } from './StartAction'
+
+export function Cta(startProps: StartProps) {
   return (
     <section aria-labelledby="titulo-cta" className="pb-16 sm:pb-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -13,8 +16,8 @@ export function Cta() {
             Crea tu primer test en menos de un minuto. Es gratis y no hace falta
             tarjeta.
           </p>
-          <a
-            href="#"
+          <StartAction
+            {...startProps}
             className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-chispa-300 px-6 py-3 font-semibold text-neutral-900 transition duration-200 ease-out hover:bg-chispa-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-chispa-300 motion-safe:hover:-translate-y-0.5"
           >
             Crear mi primer test
@@ -31,7 +34,7 @@ export function Cta() {
               <path d="M5 12h14" />
               <path d="m12 5 7 7-7 7" />
             </svg>
-          </a>
+          </StartAction>
         </div>
       </div>
     </section>
