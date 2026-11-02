@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import type { Subject, Test } from '@tfm/types'
 
+import { ConfirmDeleteDialog } from '#/components/home/ConfirmDeleteDialog'
 import { CreateTestDialog } from '#/components/home/CreateTestDialog'
 import { TestActionsMenu } from '#/components/home/TestActionsMenu'
 import { SparklesIcon } from '#/components/icons'
@@ -8,11 +10,29 @@ import { SUBJECT_LABELS } from '#/components/landing/data'
 import { primaryButtonClass } from '#/components/ui/buttons'
 import { deleteTest, useTests } from '#/lib/tests-storage'
 
+const SUBJECTS = Object.keys(SUBJECT_LABELS) as Subject[]
+
+// Etiqueta de filtro: botón conmutable que se pinta según aria-pressed
+const tagClass =
+  'cursor-pointer rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-neutral-800 transition hover:border-marca-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 aria-pressed:border-marca-600 aria-pressed:bg-marca-600 aria-pressed:text-neutral-0 dark:border-neutral-700 dark:text-neutral-100 dark:aria-pressed:border-marca-400 dark:aria-pressed:bg-marca-400 dark:aria-pressed:text-marca-950'
+
 // Panel del usuario con sesión iniciada: la lista de sus tests
 export function TestsPanel({ name }: { name: string }) {
   const tests = useTests()
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
+  const [subjectFilter, setSubjectFilter] = useState<Subject | null>(null)
+  const [toDelete, setToDelete] = useState<Test | null>(null)
+
+  // Solo se ofrecen las materias que tiene algún test, en el orden de SUBJECT_LABELS
+  const usedSubjects = new Set(tests.map((test) => test.subject))
+  const availableSubjects = SUBJECTS.filter((s) => usedSubjects.has(s))
+  // Si se borra el último test de la materia filtrada, se vuelve a «Todos»
+  const activeFilter =
+    subjectFilter && usedSubjects.has(subjectFilter) ? subjectFilter : null
+  const visibleTests = activeFilter
+    ? tests.filter((test) => test.subject === activeFilter)
+    : tests
 
   const openCreate = () => setCreateOpen(true)
 
@@ -65,49 +85,84 @@ export function TestsPanel({ name }: { name: string }) {
           </div>
         </div>
       ) : (
-        <ul className="mt-4 divide-y divide-neutral-200 rounded-3xl border border-neutral-200 bg-neutral-0 dark:divide-neutral-800 dark:border-neutral-700 dark:bg-neutral-900">
-          {tests.map((test) => (
-            <li
-              key={test.id}
-              className="flex items-center gap-4 px-4 py-3 sm:px-6"
+        <>
+          <div
+            role="group"
+            aria-label="Filtrar por materia"
+            className="mt-4 flex flex-wrap gap-2"
+          >
+            <button
+              type="button"
+              aria-pressed={activeFilter === null}
+              onClick={() => setSubjectFilter(null)}
+              className={tagClass}
             >
-              <span className="w-10 shrink-0 font-mono text-sm text-neutral-500 dark:text-neutral-400">
-                #{test.id}
-              </span>
-              <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
-                <strong className="min-w-0 flex-1 truncate font-semibold text-neutral-950 dark:text-neutral-0">
-                  {test.title}
-                </strong>
-                <span className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
-                  <span className="rounded-full bg-marca-50 px-2.5 py-0.5 font-medium text-marca-800 dark:bg-marca-950/60 dark:text-marca-200">
-                    {SUBJECT_LABELS[test.subject] ?? test.subject}
-                  </span>
-                  <span className="sm:w-24 sm:text-right">
-                    {test.questions.length}{' '}
-                    {test.questions.length === 1 ? 'pregunta' : 'preguntas'}
-                  </span>
-                </span>
-              </div>
-              <TestActionsMenu
-                testId={test.id}
-                title={test.title}
-                onStart={() =>
-                  navigate({
-                    to: '/tests/$id',
-                    params: { id: String(test.id) },
-                  })
+              Todos
+            </button>
+            {availableSubjects.map((subject) => (
+              <button
+                key={subject}
+                type="button"
+                aria-pressed={activeFilter === subject}
+                onClick={() =>
+                  setSubjectFilter(activeFilter === subject ? null : subject)
                 }
-                onDelete={() => {
-                  if (confirm(`¿Borrar el test «${test.title}»?`))
-                    deleteTest(test.id)
-                }}
-              />
-            </li>
-          ))}
-        </ul>
+                className={tagClass}
+              >
+                {SUBJECT_LABELS[subject]}
+              </button>
+            ))}
+          </div>
+          <ul className="mt-4 divide-y divide-neutral-200 rounded-3xl border border-neutral-200 bg-neutral-0 dark:divide-neutral-800 dark:border-neutral-700 dark:bg-neutral-900">
+            {visibleTests.map((test) => (
+              <li
+                key={test.id}
+                className="flex items-center gap-4 px-4 py-3 sm:px-6"
+              >
+                <span className="w-10 shrink-0 font-mono text-sm text-neutral-500 dark:text-neutral-400">
+                  #{test.id}
+                </span>
+                <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
+                  <strong className="min-w-0 flex-1 truncate font-semibold text-neutral-950 dark:text-neutral-0">
+                    {test.title}
+                  </strong>
+                  <span className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
+                    <span className="rounded-full bg-marca-50 px-2.5 py-0.5 font-medium text-marca-800 dark:bg-marca-950/60 dark:text-marca-200">
+                      {SUBJECT_LABELS[test.subject] ?? test.subject}
+                    </span>
+                    <span className="sm:w-24 sm:text-right">
+                      {test.questions.length}{' '}
+                      {test.questions.length === 1 ? 'pregunta' : 'preguntas'}
+                    </span>
+                  </span>
+                </div>
+                <TestActionsMenu
+                  testId={test.id}
+                  title={test.title}
+                  onStart={() =>
+                    navigate({
+                      to: '/tests/$id',
+                      params: { id: String(test.id) },
+                    })
+                  }
+                  onDelete={() => setToDelete(test)}
+                />
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       <CreateTestDialog open={createOpen} onClose={() => setCreateOpen(false)} />
+      <ConfirmDeleteDialog
+        open={toDelete !== null}
+        title={toDelete?.title ?? ''}
+        onCancel={() => setToDelete(null)}
+        onConfirm={() => {
+          if (toDelete) deleteTest(toDelete.id)
+          setToDelete(null)
+        }}
+      />
     </section>
   )
 }

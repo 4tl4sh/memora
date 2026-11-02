@@ -19,10 +19,16 @@ const inputClass = 'mt-0.5 size-4 shrink-0 accent-marca-600 dark:accent-marca-40
 const isAnswered = (given: Given | undefined) =>
   given !== undefined && (!Array.isArray(given) || given.length > 0)
 
+const typeLabels: Record<Question['type'], string> = {
+  single: 'Respuesta simple',
+  multiple: 'Respuesta múltiple',
+  'true-false': 'Verdadero o falso',
+}
+
 const hints: Record<Question['type'], string> = {
   single: 'Elige una respuesta',
   multiple: 'Elige todas las correctas',
-  'true-false': 'Verdadero o falso',
+  'true-false': 'Elige una respuesta',
 }
 
 // Pantalla para realizar un test: preguntas, progreso y botón de finalizar
@@ -84,8 +90,12 @@ export function TestRunner({ test }: { test: Test }) {
               <fieldset className="rounded-3xl border border-neutral-200 bg-neutral-0 p-5 sm:p-6 dark:border-neutral-700 dark:bg-neutral-900">
                 {/* float evita que la leyenda se pinte sobre el borde del fieldset */}
                 <legend className="float-left w-full">
-                  <span className="block text-sm font-semibold text-neutral-500 dark:text-neutral-400">
-                    Pregunta {n + 1} de {total} · {hints[question.type]}
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+                    Pregunta {n + 1} de {total}
+                    <span className="rounded-full bg-marca-50 px-2.5 py-0.5 font-medium text-marca-800 dark:bg-marca-950/60 dark:text-marca-200">
+                      {typeLabels[question.type]}
+                    </span>
+                    <span className="font-normal">{hints[question.type]}</span>
                   </span>
                   <span className="mt-2 block font-semibold text-pretty text-neutral-950 dark:text-neutral-0">
                     {question.statement}

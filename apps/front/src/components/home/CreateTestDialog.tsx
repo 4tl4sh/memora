@@ -13,7 +13,7 @@ import { SUBJECT_LABELS } from '#/components/landing/data'
 import { iconButtonClass, primaryButtonClass } from '#/components/ui/buttons'
 import { addTest } from '#/lib/tests-storage'
 import { QUESTION_COUNTS, generateTest } from '#/server/generate-test'
-import type { QuestionType } from '#/server/generate-test'
+import type { TestQuestionType } from '#/server/generate-test'
 
 interface CreateTestDialogProps {
   open: boolean
@@ -22,9 +22,10 @@ interface CreateTestDialogProps {
 
 type Step = 'mode' | 'ai'
 
-const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
+const QUESTION_TYPES: { value: TestQuestionType; label: string }[] = [
   { value: 'single', label: 'Respuesta simple' },
   { value: 'multiple', label: 'Respuesta múltiple' },
+  { value: 'mixed', label: 'Mixta' },
 ]
 
 const SUBJECTS = Object.entries(SUBJECT_LABELS) as [Subject, string][]
@@ -45,7 +46,7 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
   const [step, setStep] = useState<Step>('mode')
   const [file, setFile] = useState<File | null>(null)
   const [count, setCount] = useState<number | null>(null)
-  const [type, setType] = useState<QuestionType | null>(null)
+  const [type, setType] = useState<TestQuestionType | null>(null)
   const [subject, setSubject] = useState<Subject | ''>('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

@@ -5,11 +5,15 @@ import { SUBJECT_LABELS } from '#/components/landing/data'
 import { MAX_PDF_BYTES, isPdf } from '#/lib/pdf'
 import { extractPdfText } from '#/server/pdf-to-text'
 
+// Tipo de una pregunta concreta
 export type QuestionType = Extract<Question['type'], 'single' | 'multiple'>
+
+// Lo que elige el usuario: todas simples, todas múltiples o mezcla de ambas
+export type TestQuestionType = QuestionType | 'mixed'
 
 export const QUESTION_COUNTS = [5, 10, 15] as const
 
-const QUESTION_TYPES: QuestionType[] = ['single', 'multiple']
+const QUESTION_TYPES: TestQuestionType[] = ['single', 'multiple', 'mixed']
 
 const OPTIONS_PER_QUESTION = 4
 
@@ -52,15 +56,28 @@ interface AiQuestion {
   explanation?: unknown
 }
 
-const buildPrompt = (count: number, type: QuestionType, subject: Subject) => {
-  const answers =
-    type === 'single'
-      ? 'exactamente 1 opción correcta'
-      : 'entre 2 y 3 opciones correctas'
+const SINGLE_ANSWER = 'exactamente 1 opción correcta'
+const MULTIPLE_ANSWER = 'entre 2 y 3 opciones correctas'
+
+const buildPrompt = (count: number, type: TestQuestionType, subject: Subject) => {
+  let answers: string
+  if (type === 'mixed') {
+    const singles = Math.ceil(count / 2)
+    const multiples = count - singles
+    answers = [
+      `Cada pregunta tiene ${OPTIONS_PER_QUESTION} opciones.`,
+      `${singles} preguntas deben tener ${SINGLE_ANSWER} y ${multiples} preguntas deben tener ${MULTIPLE_ANSWER}.`,
+      'Intercala ambos tipos de pregunta a lo largo del test, no las agrupes.',
+    ].join('\n')
+  } else {
+    answers = `Cada pregunta tiene ${OPTIONS_PER_QUESTION} opciones y ${
+      type === 'single' ? SINGLE_ANSWER : MULTIPLE_ANSWER
+    }.`
+  }
   return [
     `Eres un profesor de ${SUBJECT_LABELS[subject]} que prepara tests de repaso en español.`,
     `A partir del temario que te da el usuario, crea exactamente ${count} preguntas tipo test.`,
-    `Cada pregunta tiene ${OPTIONS_PER_QUESTION} opciones y ${answers}.`,
+    answers,
     'correctIndexes son las posiciones (empezando en 0) de las opciones correctas.',
     'Usa solo información del temario, no repitas preguntas y reparte las preguntas por todo el contenido.',
     'Enunciados y opciones concisos. Explicación de una sola frase (máximo 150 caracteres).',
@@ -68,8 +85,18 @@ const buildPrompt = (count: number, type: QuestionType, subject: Subject) => {
   ].join('\n')
 }
 
+// Tipo de cada pregunta: en un test mixto se deduce del número de respuestas correctas
+const resolveType = (
+  type: TestQuestionType,
+  correct: number,
+): QuestionType | null => {
+  if (type === 'mixed') return correct === 1 ? 'single' : correct >= 2 ? 'multiple' : null
+  if (type === 'single') return correct === 1 ? type : null
+  return correct >= 2 ? type : null
+}
+
 // La IA puede equivocarse: se descartan las preguntas mal formadas
-const toQuestions = (raw: unknown, type: QuestionType): Question[] => {
+const toQuestions = (raw: unknown, type: TestQuestionType): Question[] => {
   if (!Array.isArray(raw)) return []
   const questions: Question[] = []
   for (const q of raw as AiQuestion[]) {
@@ -84,7 +111,8 @@ const toQuestions = (raw: unknown, type: QuestionType): Question[] => {
       : []
     if (!statement || options.length !== OPTIONS_PER_QUESTION || options.some((o) => !o))
       continue
-    if (type === 'single' ? indexes.length !== 1 : indexes.length < 2) continue
+    const questionType = resolveType(type, indexes.length)
+    if (!questionType) continue
 
     const base = {
       id: questions.length + 1,
@@ -95,9 +123,13 @@ const toQuestions = (raw: unknown, type: QuestionType): Question[] => {
         : {}),
     }
     questions.push(
-      type === 'single'
-        ? { ...base, type, correctIndex: indexes[0] }
-        : { ...base, type, correctIndexes: indexes.sort((a, b) => a - b) },
+      questionType === 'single'
+        ? { ...base, type: questionType, correctIndex: indexes[0] }
+        : {
+            ...base,
+            type: questionType,
+            correctIndexes: indexes.sort((a, b) => a - b),
+          },
     )
   }
   return questions
@@ -135,7 +167,7 @@ export const generateTest = createServerFn({ method: 'POST' })
     if (typeof subject !== 'string' || !(subject in SUBJECT_LABELS))
       throw new Error('Materia no válida')
 
-    return { file, count, type: type as QuestionType, subject: subject as Subject }
+    return { file, count, type: type as TestQuestionType, subject: subject as Subject }
   })
   .handler(async ({ data: { file, count, type, subject } }) => {
     const apiKey = process.env.GEMINI_API_KEY
