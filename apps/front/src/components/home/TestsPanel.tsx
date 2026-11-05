@@ -8,6 +8,7 @@ import { TestActionsMenu } from '#/components/home/TestActionsMenu'
 import { SearchIcon, SparklesIcon } from '#/components/icons'
 import { SUBJECT_LABELS } from '#/components/landing/data'
 import { primaryButtonClass } from '#/components/ui/buttons'
+import { inputBaseClass } from '#/components/ui/inputs'
 import type { SessionUser } from '#/lib/session-storage'
 import { deleteTest, useUserTests } from '#/lib/tests-storage'
 
@@ -101,43 +102,45 @@ export function TestsPanel({ user }: { user: SessionUser }) {
         </div>
       ) : (
         <>
-          <div role="search" className="relative mt-4">
-            <SearchIcon className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-neutral-500 dark:text-neutral-400" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              aria-label="Buscar test por título"
-              placeholder="Buscar por título…"
-              className="w-full rounded-full border border-neutral-300 bg-neutral-0 py-2.5 pr-4 pl-11 text-sm text-neutral-950 placeholder:text-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-0 dark:placeholder:text-neutral-400"
-            />
-          </div>
-          <div
-            role="group"
-            aria-label="Filtrar por materia"
-            className="mt-3 flex flex-wrap gap-2"
-          >
-            <button
-              type="button"
-              aria-pressed={activeFilter === null}
-              onClick={() => setSubjectFilter(null)}
-              className={tagClass}
+          <div className="mt-4 flex flex-col gap-3">
+            <div role="search" className="relative sm:w-72 sm:shrink-0">
+              <SearchIcon className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-neutral-500 dark:text-neutral-400" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                aria-label="Buscar test por título"
+                placeholder="Buscar por título…"
+                className={`${inputBaseClass} pr-4 pl-11`}
+              />
+            </div>
+            <div
+              role="group"
+              aria-label="Filtrar por materia"
+              className="flex flex-wrap gap-2"
             >
-              Todos
-            </button>
-            {availableSubjects.map((subject) => (
               <button
-                key={subject}
                 type="button"
-                aria-pressed={activeFilter === subject}
-                onClick={() =>
-                  setSubjectFilter(activeFilter === subject ? null : subject)
-                }
+                aria-pressed={activeFilter === null}
+                onClick={() => setSubjectFilter(null)}
                 className={tagClass}
               >
-                {SUBJECT_LABELS[subject]}
+                Todos
               </button>
-            ))}
+              {availableSubjects.map((subject) => (
+                <button
+                  key={subject}
+                  type="button"
+                  aria-pressed={activeFilter === subject}
+                  onClick={() =>
+                    setSubjectFilter(activeFilter === subject ? null : subject)
+                  }
+                  className={tagClass}
+                >
+                  {SUBJECT_LABELS[subject]}
+                </button>
+              ))}
+            </div>
           </div>
           {visibleTests.length === 0 && (
             <p
@@ -147,7 +150,10 @@ export function TestsPanel({ user }: { user: SessionUser }) {
               Ningún test coincide con tu búsqueda.
             </p>
           )}
-          <ul hidden={visibleTests.length === 0} className="mt-4 divide-y divide-neutral-200 rounded-3xl border border-neutral-200 bg-neutral-0 dark:divide-neutral-800 dark:border-neutral-700 dark:bg-neutral-900">
+          <ul
+            hidden={visibleTests.length === 0}
+            className="mt-4 divide-y divide-neutral-200 rounded-3xl border border-neutral-200 bg-neutral-0 dark:divide-neutral-800 dark:border-neutral-700 dark:bg-neutral-900"
+          >
             {visibleTests.map((test) => (
               <li
                 key={test.id}
@@ -187,7 +193,10 @@ export function TestsPanel({ user }: { user: SessionUser }) {
         </>
       )}
 
-      <CreateTestDialog open={createOpen} onClose={() => setCreateOpen(false)} />
+      <CreateTestDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+      />
       <ConfirmDeleteDialog
         open={toDelete !== null}
         title={toDelete?.title ?? ''}
