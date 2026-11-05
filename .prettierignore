@@ -1,0 +1,10 @@
+node_modules
+pnpm-lock.yaml
+**/routeTree.gen.ts
+**/.output
+**/.nitro
+**/.vercel
+**/.tanstack
+**/dist
+docs
+*.md

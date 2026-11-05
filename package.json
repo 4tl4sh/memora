@@ -10,9 +10,13 @@
     "typecheck": "turbo run typecheck",
     "db:up": "docker compose up -d mongodb",
     "db:down": "docker compose down",
-    "db:logs": "docker compose logs -f mongodb"
+    "db:logs": "docker compose logs -f mongodb",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "turbo": "^2.11.10"
   }
 }
