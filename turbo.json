@@ -13,7 +13,8 @@
       "outputs": [
         "dist/**",
         ".output/**",
-        ".nitro/**"
+        ".nitro/**",
+        ".vercel/**"
       ]
     },
     "dev": {
