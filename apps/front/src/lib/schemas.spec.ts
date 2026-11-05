@@ -28,21 +28,26 @@ describe('loginSchema', () => {
   })
 })
 
+const registration = {
+  name: 'Lucía',
+  email: 'lucia@correo.com',
+  password: 'secreta',
+  planId: 'gratis' as const,
+  cardNumber: '',
+  expiry: '',
+  cvv: '',
+}
+
 describe('registerSchema', () => {
   it('debería rechazar un nombre con solo espacios', () => {
-    const result = registerSchema.safeParse({
-      name: '   ',
-      email: 'lucia@correo.com',
-      password: 'secreta',
-    })
+    const result = registerSchema.safeParse({ ...registration, name: '   ' })
 
     expect(messages(result)).toEqual(['Escribe tu nombre.'])
   })
 
   it('debería exigir al menos 6 caracteres de contraseña', () => {
     const result = registerSchema.safeParse({
-      name: 'Lucía',
-      email: 'lucia@correo.com',
+      ...registration,
       password: '12345',
     })
 
@@ -53,16 +58,44 @@ describe('registerSchema', () => {
 
   it('debería quitar los espacios a los lados del nombre y del email', () => {
     const result = registerSchema.parse({
+      ...registration,
       name: '  Lucía ',
       email: ' lucia@correo.com ',
-      password: 'secreta',
     })
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       name: 'Lucía',
       email: 'lucia@correo.com',
-      password: 'secreta',
     })
+  })
+
+  it('no debería pedir tarjeta con el plan gratuito', () => {
+    expect(registerSchema.safeParse(registration).success).toBe(true)
+  })
+
+  it('debería pedir los datos de la tarjeta con un plan de pago', () => {
+    const result = registerSchema.safeParse({
+      ...registration,
+      planId: 'estudiante',
+    })
+
+    expect(result.error?.issues.map((issue) => issue.path[0])).toEqual([
+      'cardNumber',
+      'expiry',
+      'cvv',
+    ])
+  })
+
+  it('debería aceptar un plan de pago con una tarjeta válida', () => {
+    const result = registerSchema.safeParse({
+      ...registration,
+      planId: 'academia',
+      cardNumber: '4242 4242 4242 4242',
+      expiry: '12/99',
+      cvv: '123',
+    })
+
+    expect(result.success).toBe(true)
   })
 })
 

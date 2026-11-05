@@ -7,8 +7,14 @@ import {
   registerUser,
   setSessionToken,
 } from './users-storage'
+import type { Registration } from './users-storage'
 
-const lucia = { name: 'Lucía', email: 'lucia@correo.com', password: 'secreta' }
+const lucia: Registration = {
+  name: 'Lucía',
+  email: 'lucia@correo.com',
+  password: 'secreta',
+  planId: 'gratis',
+}
 
 describe('registerUser', () => {
   it('debería crear el usuario con id 1 cuando no hay ninguno', () => {

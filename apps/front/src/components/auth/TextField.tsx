@@ -14,6 +14,10 @@ interface TextFieldProps {
   autoComplete?: string
   placeholder?: string
   hint?: string
+  inputMode?: 'text' | 'numeric' | 'email'
+  maxLength?: number
+  // Da formato al valor mientras se escribe (por ejemplo, espacios en la tarjeta)
+  format?: (value: string) => string
 }
 
 // Mensajes de error de un campo: con Zod (Standard Schema) llegan como issues con message
@@ -39,6 +43,9 @@ export function TextField({
   autoComplete,
   placeholder,
   hint,
+  inputMode,
+  maxLength,
+  format,
 }: TextFieldProps) {
   const errors = fieldErrors(field)
   const invalid = errors.length > 0
@@ -56,10 +63,14 @@ export function TextField({
         name={field.name}
         type={type}
         value={field.state.value}
-        onChange={(e) => field.handleChange(e.target.value)}
+        onChange={(e) =>
+          field.handleChange(format ? format(e.target.value) : e.target.value)
+        }
         onBlur={field.handleBlur}
         autoComplete={autoComplete}
         placeholder={placeholder}
+        inputMode={inputMode}
+        maxLength={maxLength}
         aria-invalid={invalid}
         aria-describedby={describedBy || undefined}
         className={inputClass}

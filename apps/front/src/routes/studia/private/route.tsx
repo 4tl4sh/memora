@@ -40,7 +40,9 @@ function PrivateLayout() {
         <SiteHeader
           links={[]}
           homeHref="/studia/private/"
-          actions={<UserMenu name={user.name} onLogout={logout} />}
+          actions={
+            <UserMenu name={user.name} planId={user.planId} onLogout={logout} />
+          }
         />
         <main id="contenido" className="flex flex-1 flex-col">
           <Outlet />

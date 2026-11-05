@@ -41,6 +41,7 @@ describe('CreateTestDialog', () => {
       name: 'Lucía',
       email: 'lucia@correo.com',
       password: 'secreta',
+      planId: 'gratis',
     })
     if (result.ok) setUser(result.user.id)
   })

@@ -1,15 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 
+import type { PlanId } from '@tfm/types'
+
 import { LogOutIcon, UserIcon } from '#/components/icons'
+import { plans } from '#/components/landing/data'
 
 interface UserMenuProps {
   name: string
+  planId: PlanId
   onLogout: () => void
 }
 
 // Icono de cuenta con un desplegable para cerrar sesión
-export function UserMenu({ name, onLogout }: UserMenuProps) {
+export function UserMenu({ name, planId, onLogout }: UserMenuProps) {
   const [open, setOpen] = useState(false)
+  const planName = plans.find((plan) => plan.id === planId)?.name ?? 'Gratis'
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
@@ -58,6 +63,9 @@ export function UserMenu({ name, onLogout }: UserMenuProps) {
           <strong className="block truncate font-semibold text-neutral-950 dark:text-neutral-0">
             {name}
           </strong>
+          <span className="mt-1 inline-block rounded-full bg-marca-50 px-2.5 py-0.5 text-xs font-semibold text-marca-800 dark:bg-marca-950/60 dark:text-marca-200">
+            Plan {planName}
+          </span>
         </p>
         <button
           type="button"

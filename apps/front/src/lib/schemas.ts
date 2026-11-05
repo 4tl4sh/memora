@@ -1,6 +1,9 @@
 import { z } from 'zod'
-import { subjectSchema } from '@tfm/types'
+import { planIdSchema, subjectSchema } from '@tfm/types'
+import type { PlanId } from '@tfm/types'
 
+import { plans } from '#/components/landing/data'
+import { isValidCardNumber, isValidCvv, isValidExpiry } from '#/lib/card'
 import { MAX_PDF_BYTES, isPdf } from '#/lib/pdf'
 
 // Reglas de los formularios en un solo sitio: las usan TanStack Form en el navegador
@@ -21,16 +24,48 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Escribe tu contraseña.'),
 })
 
-export const registerSchema = z.object({
-  name: z.string().trim().min(1, 'Escribe tu nombre.'),
-  email: emailSchema,
-  password: z
-    .string()
-    .min(
-      MIN_PASSWORD,
-      `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`,
-    ),
-})
+// Un plan es de pago si cuesta algo al mes: entonces se piden los datos de la tarjeta
+export const isPaidPlan = (planId: PlanId) =>
+  (plans.find((plan) => plan.id === planId)?.pricePerMonth ?? 0) > 0
+
+export const registerSchema = z
+  .object({
+    name: z.string().trim().min(1, 'Escribe tu nombre.'),
+    email: emailSchema,
+    password: z
+      .string()
+      .min(
+        MIN_PASSWORD,
+        `La contraseña debe tener al menos ${MIN_PASSWORD} caracteres.`,
+      ),
+    planId: planIdSchema,
+    // Pago simulado: solo se valida el formato, la tarjeta no se guarda
+    cardNumber: z.string(),
+    expiry: z.string(),
+    cvv: z.string(),
+  })
+  // La tarjeta solo es obligatoria con un plan de pago: cada error va a su campo (path)
+  .superRefine(({ planId, cardNumber, expiry, cvv }, ctx) => {
+    if (!isPaidPlan(planId)) return
+    if (!isValidCardNumber(cardNumber))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['cardNumber'],
+        message: 'Escribe un número de tarjeta válido.',
+      })
+    if (!isValidExpiry(expiry))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['expiry'],
+        message: 'Fecha no válida o caducada.',
+      })
+    if (!isValidCvv(cvv))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['cvv'],
+        message: 'Entre 3 y 4 dígitos.',
+      })
+  })
 
 export type LoginValues = z.input<typeof loginSchema>
 export type RegisterValues = z.input<typeof registerSchema>

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { userSchema } from '@tfm/types'
-import type { User } from '@tfm/types'
+import type { PlanId, User } from '@tfm/types'
 
 // Usuarios registrados: de momento viven solo en localStorage, sin servidor.
 // Simulación: la contraseña se guarda en claro. Con un backend real iría hasheada en el servidor.
@@ -19,6 +19,7 @@ export interface Registration {
   name: string
   email: string
   password: string
+  planId: PlanId
 }
 
 export type RegisterResult =
@@ -69,6 +70,7 @@ export const registerUser = ({
   name,
   email,
   password,
+  planId,
 }: Registration): RegisterResult => {
   const users = readUsers()
   const normalized = normalizeEmail(email)
@@ -80,7 +82,7 @@ export const registerUser = ({
     name: name.trim(),
     email: normalized,
     password,
-    planId: 'gratis',
+    planId,
     preferences: { theme: 'teal', darkMode: false, dailyGoal: 10 },
     createdAt: new Date().toISOString(),
   }

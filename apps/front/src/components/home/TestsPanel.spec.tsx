@@ -10,7 +10,12 @@ import { TestsPanel } from './TestsPanel'
 // se sustituye para no cargar el servidor de TanStack Start en los tests
 vi.mock('#/server/generate-test', () => ({ generateTest: vi.fn() }))
 
-const user = { id: 1, name: 'Lucía', email: 'lucia@correo.com' }
+const user = {
+  id: 1,
+  name: 'Lucía',
+  email: 'lucia@correo.com',
+  planId: 'gratis' as const,
+}
 
 const newTest = (title: string, subject: Subject): NewTest => ({
   title,

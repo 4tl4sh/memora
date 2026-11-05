@@ -21,6 +21,7 @@ describe('LoginDialog', () => {
       name: 'Lucía',
       email: 'lucia@correo.com',
       password: 'secreta',
+      planId: 'gratis',
     })
   })
 

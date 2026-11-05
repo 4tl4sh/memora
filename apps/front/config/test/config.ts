@@ -16,6 +16,9 @@ export default defineConfig({
     // Un DOM simulado (document, localStorage…) para los componentes y los storages
     environment: 'jsdom',
     setupFiles: ['./config/test/setup.ts'],
+    // Los tests de componentes escriben tecla a tecla con user-event y cada pulsación
+    // valida el formulario: con todos los ficheros en paralelo, 5 s se queda corto
+    testTimeout: 15_000,
     include: ['src/**/*.spec.{ts,tsx}'],
     coverage: {
       include: ['src/**/*.{ts,tsx}'],
