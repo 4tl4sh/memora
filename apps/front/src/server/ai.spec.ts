@@ -2,6 +2,7 @@ import {
   AiHttpError,
   aiErrorMessage,
   buildPrompt,
+  mixedSplit,
   callGroq,
   parseAiResponse,
   resolveType,
@@ -29,6 +30,21 @@ describe('resolveType', () => {
 
   it('debería descartar una pregunta sin respuestas correctas', () => {
     expect(resolveType('mixed', 0)).toBeNull()
+  })
+
+  it('no debería dar un tipo de opciones en un test de verdadero o falso', () => {
+    expect(resolveType('true-false', 1)).toBeNull()
+  })
+})
+
+describe('mixedSplit', () => {
+  it.each([
+    [5, { singles: 2, multiples: 2, trueFalse: 1 }],
+    [10, { singles: 4, multiples: 3, trueFalse: 3 }],
+    [15, { singles: 5, multiples: 5, trueFalse: 5 }],
+  ])('debería repartir %i preguntas entre los tres tipos', (count, split) => {
+    expect(mixedSplit(count)).toEqual(split)
+    expect(split.singles + split.multiples + split.trueFalse).toBe(count)
   })
 })
 
@@ -72,12 +88,43 @@ describe('toQuestions', () => {
     expect(question).toMatchObject({ type: 'multiple', correctIndexes: [0, 3] })
   })
 
-  it('debería descartar una pregunta que no tiene 4 opciones', () => {
+  it('debería descartar una pregunta de opciones que no tiene 4', () => {
     const questions = toQuestions(
-      [aiQuestion({ options: ['Verdadero', 'Falso'], correctIndexes: [0] })],
+      [aiQuestion({ options: ['Sí', 'No'], correctIndexes: [0] })],
       'mixed',
     )
     expect(questions).toEqual([])
+  })
+
+  it('debería convertir una afirmación con truth en verdadero o falso', () => {
+    const [question] = toQuestions(
+      [aiQuestion({ options: [], correctIndexes: [], truth: false })],
+      'true-false',
+    )
+    expect(question).toMatchObject({ type: 'true-false', correct: false })
+  })
+
+  it('en un test de verdadero o falso debería descartar las que no traen truth', () => {
+    expect(toQuestions([aiQuestion()], 'true-false')).toEqual([])
+  })
+
+  it('en un test mixto debería reconocer cada tipo', () => {
+    const questions = toQuestions(
+      [
+        aiQuestion(),
+        aiQuestion({ correctIndexes: [0, 2] }),
+        // Groq siempre devuelve truth: en las de opciones se ignora
+        aiQuestion({ truth: true }),
+        aiQuestion({ options: [], correctIndexes: [], truth: true }),
+      ],
+      'mixed',
+    )
+    expect(questions.map((q) => q.type)).toEqual([
+      'single',
+      'multiple',
+      'single',
+      'true-false',
+    ])
   })
 })
 
@@ -106,12 +153,17 @@ describe('buildPrompt', () => {
     expect(prompt).toContain('Historia')
   })
 
-  it('en un test mixto debería repartir las preguntas entre simples y múltiples', () => {
+  it('en un test mixto debería pedir los tres tipos de pregunta', () => {
     const prompt = buildPrompt(5, 'mixed', 'quimica')
     expect(prompt).toContain(
-      '3 preguntas deben tener exactamente 1 opción correcta y 2 preguntas deben tener entre 2 y 3 opciones correctas',
+      '2 preguntas deben tener exactamente 1 opción correcta, 2 deben tener entre 2 y 3 opciones correctas y 1 deben ser una afirmación',
     )
-    expect(prompt).not.toContain('verdadero o falso')
+  })
+
+  it('en un test de verdadero o falso debería pedir afirmaciones con truth', () => {
+    const prompt = buildPrompt(10, 'true-false', 'historia')
+    expect(prompt).toContain('Todas las preguntas son una afirmación')
+    expect(prompt).toContain('truth')
   })
 })
 

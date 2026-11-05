@@ -1,23 +1,39 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { MoreVerticalIcon, PlayIcon, TrashIcon } from '#/components/icons'
+import {
+  CopyIcon,
+  MoreVerticalIcon,
+  PencilIcon,
+  PlayIcon,
+  TrashIcon,
+} from '#/components/icons'
 import { iconButtonClass } from '#/components/ui/buttons'
 
 interface TestActionsMenuProps {
   testId: number
   title: string
   onStart: () => void
+  onEdit: () => void
+  onDuplicate: () => void
+  // «Duplicar como manual» en tests de IA (la copia ya se puede editar), «Duplicar test» en el resto
+  duplicateLabel: string
   onDelete: () => void
 }
 
 const itemClass =
   'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500'
 
-// Menú de tres puntos de cada fila: realizar o borrar el test
+const neutralItemClass =
+  'text-neutral-800 hover:bg-neutral-100 hover:text-marca-700 dark:text-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-marca-300'
+
+// Menú de tres puntos de cada fila: realizar, editar, duplicar o borrar el test
 export function TestActionsMenu({
   testId,
   title,
   onStart,
+  onEdit,
+  onDuplicate,
+  duplicateLabel,
   onDelete,
 }: TestActionsMenuProps) {
   const [open, setOpen] = useState(false)
@@ -61,7 +77,7 @@ export function TestActionsMenu({
       <div
         id={menuId}
         hidden={!open}
-        className="absolute top-full right-0 z-10 mt-2 w-52 rounded-2xl border border-neutral-200 bg-neutral-0 p-2 shadow-xl motion-safe:animate-aparecer dark:border-neutral-700 dark:bg-neutral-900"
+        className="absolute top-full right-0 z-10 mt-2 w-56 rounded-2xl border border-neutral-200 bg-neutral-0 p-2 shadow-xl motion-safe:animate-aparecer dark:border-neutral-700 dark:bg-neutral-900"
       >
         <button
           type="button"
@@ -69,10 +85,32 @@ export function TestActionsMenu({
             setOpen(false)
             onStart()
           }}
-          className={`${itemClass} text-neutral-800 hover:bg-neutral-100 hover:text-marca-700 dark:text-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-marca-300`}
+          className={`${itemClass} ${neutralItemClass}`}
         >
           <PlayIcon className="size-5" />
           Realizar test
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false)
+            onEdit()
+          }}
+          className={`${itemClass} ${neutralItemClass}`}
+        >
+          <PencilIcon className="size-5" />
+          Editar test
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false)
+            onDuplicate()
+          }}
+          className={`${itemClass} ${neutralItemClass}`}
+        >
+          <CopyIcon className="size-5" />
+          {duplicateLabel}
         </button>
         <button
           type="button"

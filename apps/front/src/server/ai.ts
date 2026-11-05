@@ -39,7 +39,7 @@ export const API_KEYS: Record<AiModel, string> = {
   groq: 'GROQ_API_KEY',
 }
 
-// Lo que se pide a Gemini: siempre correctIndexes, y luego se adapta al tipo elegido
+// Lo que se pide a la IA: correctIndexes en las de opciones y truth en las de verdadero/falso
 const RESPONSE_SCHEMA = {
   type: 'object',
   properties: {
@@ -52,6 +52,7 @@ const RESPONSE_SCHEMA = {
           statement: { type: 'string' },
           options: { type: 'array', items: { type: 'string' } },
           correctIndexes: { type: 'array', items: { type: 'integer' } },
+          truth: { type: 'boolean' },
           explanation: { type: 'string' },
         },
         required: ['statement', 'options', 'correctIndexes', 'explanation'],
@@ -61,7 +62,8 @@ const RESPONSE_SCHEMA = {
   required: ['title', 'questions'],
 }
 
-// El modo estricto de Groq exige additionalProperties: false en cada objeto
+// El modo estricto de Groq exige additionalProperties: false en cada objeto y que
+// todas las propiedades sean obligatorias: truth también (en las de opciones se ignora)
 const GROQ_SCHEMA = {
   ...RESPONSE_SCHEMA,
   additionalProperties: false,
@@ -71,6 +73,10 @@ const GROQ_SCHEMA = {
       ...RESPONSE_SCHEMA.properties.questions,
       items: {
         ...RESPONSE_SCHEMA.properties.questions.items,
+        required: [
+          ...RESPONSE_SCHEMA.properties.questions.items.required,
+          'truth',
+        ],
         additionalProperties: false,
       },
     },
@@ -82,6 +88,7 @@ const aiQuestionSchema = z.object({
   statement: z.string(),
   options: z.array(z.string()),
   correctIndexes: z.array(z.number().int()),
+  truth: z.boolean().optional(),
   explanation: z.string().optional(),
 })
 
@@ -105,6 +112,15 @@ export const parseAiResponse = (raw: string | undefined) => {
 
 const SINGLE_ANSWER = 'exactamente 1 opción correcta'
 const MULTIPLE_ANSWER = 'entre 2 y 3 opciones correctas'
+const TRUE_FALSE_ANSWER =
+  'una afirmación (no una pregunta) que sea verdadera o falsa; en esas deja options y correctIndexes como arrays vacíos y pon en truth si es verdadera'
+
+// Reparto de un test mixto: un tercio de verdadero/falso y el resto, mitad simples y mitad múltiples
+export const mixedSplit = (count: number) => {
+  const trueFalse = Math.floor(count / 3)
+  const multiples = Math.floor((count - trueFalse) / 2)
+  return { trueFalse, multiples, singles: count - trueFalse - multiples }
+}
 
 export const buildPrompt = (
   count: number,
@@ -113,13 +129,16 @@ export const buildPrompt = (
 ) => {
   let answers: string
   if (type === 'mixed') {
-    // Mitad y mitad; si es impar, sobra una simple
-    const singles = Math.ceil(count / 2)
-    const multiples = count - singles
+    const { singles, multiples, trueFalse } = mixedSplit(count)
     answers = [
-      `Cada pregunta tiene ${OPTIONS_PER_QUESTION} opciones.`,
-      `${singles} preguntas deben tener ${SINGLE_ANSWER} y ${multiples} preguntas deben tener ${MULTIPLE_ANSWER}.`,
-      'Intercala ambos tipos de pregunta a lo largo del test, no las agrupes.',
+      `Las preguntas de opciones tienen ${OPTIONS_PER_QUESTION} opciones.`,
+      `${singles} preguntas deben tener ${SINGLE_ANSWER}, ${multiples} deben tener ${MULTIPLE_ANSWER} y ${trueFalse} deben ser ${TRUE_FALSE_ANSWER}.`,
+      'Intercala los tipos de pregunta a lo largo del test, no los agrupes.',
+    ].join('\n')
+  } else if (type === 'true-false') {
+    answers = [
+      `Todas las preguntas son ${TRUE_FALSE_ANSWER}.`,
+      'Reparte las verdaderas y las falsas de forma equilibrada.',
     ].join('\n')
   } else {
     answers = `Cada pregunta tiene ${OPTIONS_PER_QUESTION} opciones y ${
@@ -137,16 +156,17 @@ export const buildPrompt = (
   ].join('\n')
 }
 
-// Tipos de pregunta que genera la IA
-type GeneratedType = Exclude<QuestionType, 'true-false'>
+// Preguntas de opciones (las de verdadero/falso se reconocen aparte, por truth)
+type OptionsType = Exclude<QuestionType, 'true-false'>
 
-// Tipo de cada pregunta: en un test mixto se deduce del número de respuestas
-// correctas; null si no encaja con lo que eligió el usuario
+// Tipo de una pregunta de opciones: en un test mixto se deduce del número de
+// respuestas correctas; null si no encaja con lo que eligió el usuario
 export const resolveType = (
   type: TestQuestionType,
   correct: number,
-): GeneratedType | null => {
-  const resolved: GeneratedType | null =
+): OptionsType | null => {
+  if (type === 'true-false') return null
+  const resolved: OptionsType | null =
     correct === 1 ? 'single' : correct >= 2 ? 'multiple' : null
   return resolved && (type === 'mixed' || type === resolved) ? resolved : null
 }
@@ -166,11 +186,26 @@ export const toQuestions = (
     const indexes = [...new Set(q.correctIndexes)].filter(
       (i) => i >= 0 && i < options.length,
     )
-    if (
-      !statement ||
-      options.length !== OPTIONS_PER_QUESTION ||
-      options.some((o) => !o)
-    )
+    if (!statement) continue
+    const explanation = q.explanation?.trim()
+      ? { explanation: q.explanation.trim() }
+      : {}
+
+    // Verdadero o falso: sin opciones y con truth. En un test mixto se reconoce por eso mismo
+    const isTrueFalse = q.truth !== undefined && options.length === 0
+    if (type === 'true-false' || (type === 'mixed' && isTrueFalse)) {
+      if (q.truth === undefined) continue
+      questions.push({
+        id: questions.length + 1,
+        statement,
+        type: 'true-false',
+        correct: q.truth,
+        ...explanation,
+      })
+      continue
+    }
+
+    if (options.length !== OPTIONS_PER_QUESTION || options.some((o) => !o))
       continue
     const questionType = resolveType(type, indexes.length)
     if (!questionType) continue
@@ -179,7 +214,7 @@ export const toQuestions = (
       id: questions.length + 1,
       statement,
       options,
-      ...(q.explanation?.trim() ? { explanation: q.explanation.trim() } : {}),
+      ...explanation,
     }
     questions.push(
       questionType === 'single'

@@ -15,6 +15,8 @@ import { Route as StudiaIndexRouteImport } from './routes/studia/index'
 import { Route as StudiaPrivateRouteRouteImport } from './routes/studia/private/route'
 import { Route as TestsIdRouteImport } from './routes/tests/$id'
 import { Route as StudiaPrivateIndexRouteImport } from './routes/studia/private/index'
+import { Route as StudiaPrivateNuevoRouteImport } from './routes/studia/private/nuevo'
+import { Route as StudiaPrivateEditarIdRouteImport } from './routes/studia/private/editar.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +48,16 @@ const StudiaPrivateIndexRoute = StudiaPrivateIndexRouteImport.update({
   path: '/',
   getParentRoute: () => StudiaPrivateRouteRoute,
 } as any)
+const StudiaPrivateNuevoRoute = StudiaPrivateNuevoRouteImport.update({
+  id: '/nuevo',
+  path: '/nuevo',
+  getParentRoute: () => StudiaPrivateRouteRoute,
+} as any)
+const StudiaPrivateEditarIdRoute = StudiaPrivateEditarIdRouteImport.update({
+  id: '/editar/$id',
+  path: '/editar/$id',
+  getParentRoute: () => StudiaPrivateRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,14 +65,18 @@ export interface FileRoutesByFullPath {
   '/studia/private': typeof StudiaPrivateRouteRouteWithChildren
   '/tests/$id': typeof TestsIdRoute
   '/studia/': typeof StudiaIndexRoute
+  '/studia/private/nuevo': typeof StudiaPrivateNuevoRoute
   '/studia/private/': typeof StudiaPrivateIndexRoute
+  '/studia/private/editar/$id': typeof StudiaPrivateEditarIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/studia-landing': typeof StudiaLandingRoute
   '/tests/$id': typeof TestsIdRoute
   '/studia': typeof StudiaIndexRoute
+  '/studia/private/nuevo': typeof StudiaPrivateNuevoRoute
   '/studia/private': typeof StudiaPrivateIndexRoute
+  '/studia/private/editar/$id': typeof StudiaPrivateEditarIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -69,7 +85,9 @@ export interface FileRoutesById {
   '/studia/private': typeof StudiaPrivateRouteRouteWithChildren
   '/tests/$id': typeof TestsIdRoute
   '/studia/': typeof StudiaIndexRoute
+  '/studia/private/nuevo': typeof StudiaPrivateNuevoRoute
   '/studia/private/': typeof StudiaPrivateIndexRoute
+  '/studia/private/editar/$id': typeof StudiaPrivateEditarIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -79,9 +97,18 @@ export interface FileRouteTypes {
     | '/studia/private'
     | '/tests/$id'
     | '/studia/'
+    | '/studia/private/nuevo'
     | '/studia/private/'
+    | '/studia/private/editar/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/studia-landing' | '/tests/$id' | '/studia' | '/studia/private'
+  to:
+    | '/'
+    | '/studia-landing'
+    | '/tests/$id'
+    | '/studia'
+    | '/studia/private/nuevo'
+    | '/studia/private'
+    | '/studia/private/editar/$id'
   id:
     | '__root__'
     | '/'
@@ -89,7 +116,9 @@ export interface FileRouteTypes {
     | '/studia/private'
     | '/tests/$id'
     | '/studia/'
+    | '/studia/private/nuevo'
     | '/studia/private/'
+    | '/studia/private/editar/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,15 +173,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudiaPrivateIndexRouteImport
       parentRoute: typeof StudiaPrivateRouteRoute
     }
+    '/studia/private/nuevo': {
+      id: '/studia/private/nuevo'
+      path: '/nuevo'
+      fullPath: '/studia/private/nuevo'
+      preLoaderRoute: typeof StudiaPrivateNuevoRouteImport
+      parentRoute: typeof StudiaPrivateRouteRoute
+    }
+    '/studia/private/editar/$id': {
+      id: '/studia/private/editar/$id'
+      path: '/editar/$id'
+      fullPath: '/studia/private/editar/$id'
+      preLoaderRoute: typeof StudiaPrivateEditarIdRouteImport
+      parentRoute: typeof StudiaPrivateRouteRoute
+    }
   }
 }
 
 interface StudiaPrivateRouteRouteChildren {
+  StudiaPrivateNuevoRoute: typeof StudiaPrivateNuevoRoute
   StudiaPrivateIndexRoute: typeof StudiaPrivateIndexRoute
+  StudiaPrivateEditarIdRoute: typeof StudiaPrivateEditarIdRoute
 }
 
 const StudiaPrivateRouteRouteChildren: StudiaPrivateRouteRouteChildren = {
+  StudiaPrivateNuevoRoute: StudiaPrivateNuevoRoute,
   StudiaPrivateIndexRoute: StudiaPrivateIndexRoute,
+  StudiaPrivateEditarIdRoute: StudiaPrivateEditarIdRoute,
 }
 
 const StudiaPrivateRouteRouteWithChildren =

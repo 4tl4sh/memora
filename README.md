@@ -17,7 +17,8 @@ Aplicación web para estudiar con tests: subes tu temario en PDF y una IA te pro
 | **Landing** (`/studia/`) | Cabecera con selector de tema, modo oscuro y menú móvil. Hero, ejemplos de tests, cómo funciona, opiniones, planes con destacado, FAQ y pie con newsletter. Los datos, precios y opiniones son inventados |
 | **Registro y acceso** | Registro con nombre, correo y contraseña (mínimo 6 caracteres) y login con esas credenciales. Los usuarios y la sesión se guardan en el navegador: es una **simulación**, la contraseña se guarda en claro y no hay servidor. Cada usuario solo ve sus propios tests |
 | **Panel** (`/studia/private/`) | Lista de tus tests con filtro por materia, menú de acciones por test (realizar o borrar, con confirmación) y estado vacío si todavía no hay ninguno |
-| **Crear un test** | Con asistencia de IA: subes un PDF (hasta 5 MB), eliges 5, 10 o 15 preguntas, el tipo (simple, múltiple o mixta), el modelo (Gemini Flash o Groq) y la materia. El modo manual está en la interfaz como «Próximamente» |
+| **Crear un test** | Con asistencia de IA: subes un PDF (hasta 5 MB), eliges 5, 10 o 15 preguntas, el tipo (simple, múltiple, verdadero o falso, o mixta con los tres), el modelo (Gemini Flash o Groq) y la materia. O a mano, escribiendo título, materia y preguntas (simple, múltiple o verdadero/falso) |
+| **Editar un test** | Los tests manuales se editan por completo. Los de IA solo permiten cambiar título y materia, porque sus explicaciones y su origen dependen de las preguntas. Para retocarlos, o para partir de un test que ya tienes, está «Duplicar» (en los de IA, «Duplicar como manual»): la copia es siempre manual |
 | **Hacer un test** (`/tests/:id`) | Todas las preguntas en una página, con el progreso siempre a la vista y botón de finalizar. Al terminar se muestra el resultado con confeti |
 | **Preferencias** | Tres temas de color (Teal, Azul Klein y Amarillo) y modo oscuro, combinables |
 
