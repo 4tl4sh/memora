@@ -152,3 +152,10 @@ export const LoaderIcon = (props: IconProps) => (
     <path d="M21 12a9 9 0 1 1-6.219-8.56" />
   </Icon>
 )
+
+export const SearchIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
+  </Icon>
+)

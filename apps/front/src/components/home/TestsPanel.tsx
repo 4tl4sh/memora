@@ -5,11 +5,19 @@ import type { Subject, Test } from '@tfm/types'
 import { ConfirmDeleteDialog } from '#/components/home/ConfirmDeleteDialog'
 import { CreateTestDialog } from '#/components/home/CreateTestDialog'
 import { TestActionsMenu } from '#/components/home/TestActionsMenu'
-import { SparklesIcon } from '#/components/icons'
+import { SearchIcon, SparklesIcon } from '#/components/icons'
 import { SUBJECT_LABELS } from '#/components/landing/data'
 import { primaryButtonClass } from '#/components/ui/buttons'
 import type { SessionUser } from '#/lib/session-storage'
 import { deleteTest, useUserTests } from '#/lib/tests-storage'
+
+// Búsqueda sin mayúsculas ni tildes: «quimica» encuentra «Química»
+const normalize = (text: string) =>
+  text
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .trim()
 
 const SUBJECTS = Object.keys(SUBJECT_LABELS) as Subject[]
 
@@ -23,6 +31,7 @@ export function TestsPanel({ user }: { user: SessionUser }) {
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
   const [subjectFilter, setSubjectFilter] = useState<Subject | null>(null)
+  const [query, setQuery] = useState('')
   const [toDelete, setToDelete] = useState<Test | null>(null)
 
   // Solo se ofrecen las materias que tiene algún test, en el orden de SUBJECT_LABELS
@@ -31,9 +40,14 @@ export function TestsPanel({ user }: { user: SessionUser }) {
   // Si se borra el último test de la materia filtrada, se vuelve a «Todos»
   const activeFilter =
     subjectFilter && usedSubjects.has(subjectFilter) ? subjectFilter : null
-  const visibleTests = activeFilter
-    ? tests.filter((test) => test.subject === activeFilter)
-    : tests
+  const search = normalize(query)
+  const visibleTests = tests.filter(
+    (test) =>
+      (!activeFilter || test.subject === activeFilter) &&
+      (!search || normalize(test.title).includes(search)),
+  )
+  const startTest = (test: Test) =>
+    navigate({ to: '/tests/$id', params: { id: String(test.id) } })
 
   const openCreate = () => setCreateOpen(true)
 
@@ -87,10 +101,21 @@ export function TestsPanel({ user }: { user: SessionUser }) {
         </div>
       ) : (
         <>
+          <div role="search" className="relative mt-4">
+            <SearchIcon className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-neutral-500 dark:text-neutral-400" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label="Buscar test por título"
+              placeholder="Buscar por título…"
+              className="w-full rounded-full border border-neutral-300 bg-neutral-0 py-2.5 pr-4 pl-11 text-sm text-neutral-950 placeholder:text-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-0 dark:placeholder:text-neutral-400"
+            />
+          </div>
           <div
             role="group"
             aria-label="Filtrar por materia"
-            className="mt-4 flex flex-wrap gap-2"
+            className="mt-3 flex flex-wrap gap-2"
           >
             <button
               type="button"
@@ -114,7 +139,15 @@ export function TestsPanel({ user }: { user: SessionUser }) {
               </button>
             ))}
           </div>
-          <ul className="mt-4 divide-y divide-neutral-200 rounded-3xl border border-neutral-200 bg-neutral-0 dark:divide-neutral-800 dark:border-neutral-700 dark:bg-neutral-900">
+          {visibleTests.length === 0 && (
+            <p
+              role="status"
+              className="mt-4 rounded-3xl border border-neutral-200 bg-neutral-0 p-8 text-center text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400"
+            >
+              Ningún test coincide con tu búsqueda.
+            </p>
+          )}
+          <ul hidden={visibleTests.length === 0} className="mt-4 divide-y divide-neutral-200 rounded-3xl border border-neutral-200 bg-neutral-0 dark:divide-neutral-800 dark:border-neutral-700 dark:bg-neutral-900">
             {visibleTests.map((test) => (
               <li
                 key={test.id}
@@ -124,9 +157,14 @@ export function TestsPanel({ user }: { user: SessionUser }) {
                   #{test.id}
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
-                  <strong className="min-w-0 flex-1 truncate font-semibold text-neutral-950 dark:text-neutral-0">
+                  <button
+                    type="button"
+                    onClick={() => startTest(test)}
+                    title="Realizar test"
+                    className="min-w-0 flex-1 cursor-pointer truncate rounded-md text-left font-semibold text-neutral-950 transition hover:text-marca-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-0 dark:hover:text-marca-300"
+                  >
                     {test.title}
-                  </strong>
+                  </button>
                   <span className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
                     <span className="rounded-full bg-marca-50 px-2.5 py-0.5 font-medium text-marca-800 dark:bg-marca-950/60 dark:text-marca-200">
                       {SUBJECT_LABELS[test.subject] ?? test.subject}
@@ -140,12 +178,7 @@ export function TestsPanel({ user }: { user: SessionUser }) {
                 <TestActionsMenu
                   testId={test.id}
                   title={test.title}
-                  onStart={() =>
-                    navigate({
-                      to: '/tests/$id',
-                      params: { id: String(test.id) },
-                    })
-                  }
+                  onStart={() => startTest(test)}
                   onDelete={() => setToDelete(test)}
                 />
               </li>
