@@ -8,7 +8,8 @@ import { TestActionsMenu } from '#/components/home/TestActionsMenu'
 import { SparklesIcon } from '#/components/icons'
 import { SUBJECT_LABELS } from '#/components/landing/data'
 import { primaryButtonClass } from '#/components/ui/buttons'
-import { deleteTest, useTests } from '#/lib/tests-storage'
+import type { SessionUser } from '#/lib/session-storage'
+import { deleteTest, useUserTests } from '#/lib/tests-storage'
 
 const SUBJECTS = Object.keys(SUBJECT_LABELS) as Subject[]
 
@@ -17,8 +18,8 @@ const tagClass =
   'cursor-pointer rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-neutral-800 transition hover:border-marca-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 aria-pressed:border-marca-600 aria-pressed:bg-marca-600 aria-pressed:text-neutral-0 dark:border-neutral-700 dark:text-neutral-100 dark:aria-pressed:border-marca-400 dark:aria-pressed:bg-marca-400 dark:aria-pressed:text-marca-950'
 
 // Panel del usuario con sesión iniciada: la lista de sus tests
-export function TestsPanel({ name }: { name: string }) {
-  const tests = useTests()
+export function TestsPanel({ user }: { user: SessionUser }) {
+  const tests = useUserTests(user.id)
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
   const [subjectFilter, setSubjectFilter] = useState<Subject | null>(null)
@@ -48,7 +49,7 @@ export function TestsPanel({ name }: { name: string }) {
         id="titulo-panel"
         className="mt-3 font-display text-3xl font-bold tracking-tight text-balance text-neutral-950 motion-safe:animate-aparecer sm:text-4xl dark:text-neutral-0"
       >
-        Hola, {name}
+        Hola, {user.name}
       </h1>
 
       <div className="mt-8 flex items-center justify-between gap-4">

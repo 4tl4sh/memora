@@ -11,6 +11,7 @@ import {
 } from '#/components/icons'
 import { SUBJECT_LABELS } from '#/components/landing/data'
 import { iconButtonClass, primaryButtonClass } from '#/components/ui/buttons'
+import { useUser } from '#/lib/session-storage'
 import { addTest } from '#/lib/tests-storage'
 import { QUESTION_COUNTS, generateTest } from '#/server/generate-test'
 import type { TestQuestionType } from '#/server/generate-test'
@@ -43,6 +44,8 @@ const radioClass =
 // Crear test: se elige el modo (manual o con IA) y, con IA, se sube el PDF y las opciones
 export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  // Cada test se asigna al usuario que lo crea
+  const user = useUser()
   const [step, setStep] = useState<Step>('mode')
   const [file, setFile] = useState<File | null>(null)
   const [count, setCount] = useState<number | null>(null)
@@ -86,13 +89,18 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
       formData.append('subject', subject)
       // El servidor extrae el texto y se lo pasa a la IA: aquí solo llegan las preguntas
       const { title, pages, questions } = await generateTest({ data: formData })
-      addTest({
-        title: title || file.name.replace(/\.pdf$/i, ''),
-        subject,
-        status: 'private',
-        source: { kind: 'pdf', fileName: file.name, pages },
-        questions,
-      })
+      if (!user)
+        throw new Error('Tu sesión ha caducado. Vuelve a iniciar sesión.')
+      addTest(
+        {
+          title: title || file.name.replace(/\.pdf$/i, ''),
+          subject,
+          status: 'private',
+          source: { kind: 'pdf', fileName: file.name, pages },
+          questions,
+        },
+        user.id,
+      )
       dialogRef.current?.close()
     } catch (err) {
       setError(

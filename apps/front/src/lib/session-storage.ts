@@ -1,24 +1,48 @@
 import { useSyncExternalStore } from 'react'
+import type { User } from '@tfm/types'
 
-// Sesión simulada: el nombre del usuario se guarda en localStorage para que
-// sobreviva al cambiar de página y al recargar. No hay servidor ni contraseña real.
+import { USERS_KEY, findUserById } from '#/lib/users-storage'
+
+// Sesión simulada: se guarda el id del usuario registrado (ver users-storage.ts) en
+// localStorage para que sobreviva al cambiar de página y al recargar.
 
 const USER_KEY = 'studia_user'
 
-export const readUser = (): string | null => {
+export type SessionUser = Pick<User, 'id' | 'name' | 'email'>
+
+// useSyncExternalStore necesita la misma referencia mientras no cambie nada
+let cachedKey: string | null = null
+let cachedUser: SessionUser | null = null
+
+const readUserId = (): number | null => {
+  let raw: string | null = null
   try {
-    return localStorage.getItem(USER_KEY)
-  } catch {
-    return null
-  }
+    raw = localStorage.getItem(USER_KEY)
+  } catch {}
+  const id = raw ? Number(raw) : NaN
+  return Number.isInteger(id) ? id : null
+}
+
+// Usuario de la sesión, o null si no hay sesión o apunta a un usuario que ya no existe
+export const readUser = (): SessionUser | null => {
+  const id = readUserId()
+  const stored = id === null ? undefined : findUserById(id)
+  const key = stored ? `${stored.id}|${stored.name}|${stored.email}` : null
+  if (key === cachedKey) return cachedUser
+  cachedKey = key
+  cachedUser = stored
+    ? { id: stored.id, name: stored.name, email: stored.email }
+    : null
+  return cachedUser
 }
 
 const listeners = new Set<() => void>()
 const notify = () => listeners.forEach((l) => l())
 const subscribe = (listener: () => void) => {
   listeners.add(listener)
-  // Otra pestaña puede iniciar o cerrar sesión
-  const onStorage = (e: StorageEvent) => e.key === USER_KEY && listener()
+  // Otra pestaña puede iniciar o cerrar sesión, o cambiar los usuarios
+  const onStorage = (e: StorageEvent) =>
+    (e.key === USER_KEY || e.key === USERS_KEY) && listener()
   window.addEventListener('storage', onStorage)
   return () => {
     listeners.delete(listener)
@@ -26,9 +50,9 @@ const subscribe = (listener: () => void) => {
   }
 }
 
-export const setUser = (name: string) => {
+export const setUser = (id: User['id']) => {
   try {
-    localStorage.setItem(USER_KEY, name)
+    localStorage.setItem(USER_KEY, String(id))
   } catch {}
   notify()
 }

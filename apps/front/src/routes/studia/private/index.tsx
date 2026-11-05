@@ -13,5 +13,5 @@ export const Route = createFileRoute('/studia/private/')({
 function PrivateHome() {
   // El layout (route.tsx) ya garantiza que hay sesión
   const user = useUser()
-  return user && <TestsPanel name={user} />
+  return user && <TestsPanel user={user} />
 }

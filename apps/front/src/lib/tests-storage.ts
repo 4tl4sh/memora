@@ -1,7 +1,8 @@
-import { useSyncExternalStore } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import type { NewTest, Test } from '@tfm/types'
 
-// Tests del usuario: de momento viven solo en localStorage, sin servidor.
+// Tests de los usuarios: de momento viven solo en localStorage, sin servidor.
+// Cada test pertenece a quien lo creó (ownerId) y solo él lo ve.
 
 const TESTS_KEY = 'studia_tests'
 
@@ -48,14 +49,13 @@ const saveTests = (tests: Test[]) => {
   notify()
 }
 
-// Sin usuarios reales todavía: todos los tests son del usuario 0
-export const addTest = (newTest: NewTest): Test => {
+export const addTest = (newTest: NewTest, ownerId: Test['ownerId']): Test => {
   const tests = readTests()
   const now = new Date().toISOString()
   const test: Test = {
     ...newTest,
     id: tests.reduce((max, t) => Math.max(max, t.id), 0) + 1,
-    ownerId: 0,
+    ownerId,
     createdAt: now,
     updatedAt: now,
   }
@@ -70,5 +70,23 @@ export const deleteTest = (id: Test['id']) =>
 export const useTests = () =>
   useSyncExternalStore(subscribe, readTests, () => EMPTY)
 
-// Un test por id; undefined si no existe o aún no se ha hidratado
-export const useTest = (id: Test['id']) => useTests().find((t) => t.id === id)
+// Solo los tests del usuario indicado
+export const useUserTests = (ownerId: Test['ownerId'] | undefined) => {
+  const tests = useTests()
+  return useMemo(
+    () =>
+      ownerId === undefined
+        ? EMPTY
+        : tests.filter((t) => t.ownerId === ownerId),
+    [tests, ownerId],
+  )
+}
+
+// Un test por id; undefined si no existe, es de otro usuario o aún no se ha hidratado
+export const useTest = (
+  id: Test['id'],
+  ownerId: Test['ownerId'] | undefined,
+) =>
+  useTests().find(
+    (t) => t.id === id && ownerId !== undefined && t.ownerId === ownerId,
+  )

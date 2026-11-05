@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
 import { LoginDialog } from '#/components/auth/LoginDialog'
+import { RegisterDialog } from '#/components/auth/RegisterDialog'
 import { ComoFunciona } from '#/components/landing/ComoFunciona'
 import { Cta } from '#/components/landing/Cta'
 import { Ejemplos } from '#/components/landing/Ejemplos'
@@ -18,6 +19,7 @@ import {
   secondaryButtonClass,
 } from '#/components/ui/buttons'
 import { clearUser, setUser, useUser } from '#/lib/session-storage'
+import type { StoredUser } from '#/lib/users-storage'
 
 export const Route = createFileRoute('/studia/')({
   head: () => ({
@@ -33,20 +35,30 @@ export const Route = createFileRoute('/studia/')({
   component: Studia,
 })
 
-// Registro: pendiente, de momento los botones no hacen nada
-const register = () => {}
-
 function Studia() {
   // Sesión simulada: se guarda en localStorage (ver session-storage.ts)
   const user = useUser()
   const navigate = useNavigate()
   const [loginOpen, setLoginOpen] = useState(false)
+  const [registerOpen, setRegisterOpen] = useState(false)
   const loginButtonRef = useRef<HTMLButtonElement>(null)
 
-  const login = (name: string) => {
+  // Tanto al entrar como al registrarse se inicia sesión y se va a la zona privada
+  const enter = (account: StoredUser) => {
     setLoginOpen(false)
-    setUser(name)
+    setRegisterOpen(false)
+    setUser(account.id)
     navigate({ to: '/studia/private/' })
+  }
+
+  const openRegister = () => {
+    setLoginOpen(false)
+    setRegisterOpen(true)
+  }
+
+  const openLogin = () => {
+    setRegisterOpen(false)
+    setLoginOpen(true)
   }
 
   // Tras cerrar sesión el menú de usuario desaparece: el foco vuelve al botón "Entrar"
@@ -61,13 +73,13 @@ function Studia() {
     : { onStart: () => setLoginOpen(true) }
 
   const actions = user ? (
-    <UserMenu name={user} onLogout={logout} />
+    <UserMenu name={user.name} onLogout={logout} />
   ) : (
     <>
       {/* En móvil no cabe en la barra: va al final del menú (menuAction) */}
       <button
         type="button"
-        onClick={register}
+        onClick={openRegister}
         className={`${primaryButtonClass} hidden sm:inline-flex`}
       >
         Regístrate
@@ -92,7 +104,7 @@ function Studia() {
           !user && (
             <button
               type="button"
-              onClick={register}
+              onClick={openRegister}
               className={`${primaryButtonClass} w-full px-6 py-3 text-base sm:hidden`}
             >
               Regístrate
@@ -113,7 +125,14 @@ function Studia() {
       <LoginDialog
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
-        onLogin={login}
+        onLogin={enter}
+        onSwitchToRegister={openRegister}
+      />
+      <RegisterDialog
+        open={registerOpen}
+        onClose={() => setRegisterOpen(false)}
+        onRegister={enter}
+        onSwitchToLogin={openLogin}
       />
     </>
   )

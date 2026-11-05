@@ -1,4 +1,9 @@
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  Link,
+  createFileRoute,
+  redirect,
+  useNavigate,
+} from '@tanstack/react-router'
 
 import { SparklesIcon } from '#/components/icons'
 import { SiteFooter } from '#/components/layout/SiteFooter'
@@ -7,10 +12,15 @@ import { UserMenu } from '#/components/layout/UserMenu'
 import { appFooterLinks } from '#/components/layout/nav-links'
 import { TestRunner } from '#/components/test/TestRunner'
 import { primaryButtonClass } from '#/components/ui/buttons'
-import { clearUser, useUser } from '#/lib/session-storage'
+import { clearUser, readUser, useUser } from '#/lib/session-storage'
 import { useTest } from '#/lib/tests-storage'
 
+// Solo con sesión: la sesión y los tests viven en localStorage, se comprueba en el cliente
 export const Route = createFileRoute('/tests/$id')({
+  ssr: false,
+  beforeLoad: () => {
+    if (!readUser()) throw redirect({ to: '/studia/' })
+  },
   head: () => ({
     meta: [{ title: 'Realizar test · Studia' }],
   }),
@@ -20,8 +30,9 @@ export const Route = createFileRoute('/tests/$id')({
 function TestPage() {
   const { id } = Route.useParams()
   // Los tests viven en localStorage: en el servidor y antes de hidratar no hay ninguno
-  const test = useTest(Number(id))
   const user = useUser()
+  // Solo se encuentra si es del usuario con sesión
+  const test = useTest(Number(id), user?.id)
   const navigate = useNavigate()
 
   const logout = () => {
@@ -35,7 +46,7 @@ function TestPage() {
         <SiteHeader
           links={[]}
           homeHref="/studia/private/"
-          actions={user && <UserMenu name={user} onLogout={logout} />}
+          actions={user && <UserMenu name={user.name} onLogout={logout} />}
         />
         <main id="contenido" className="flex flex-1 flex-col">
           {test ? (
@@ -50,8 +61,8 @@ function TestPage() {
                     No encontramos este test
                   </h1>
                   <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-400">
-                    Puede que lo hayas borrado o que se creara en otro
-                    navegador.
+                    Puede que lo hayas borrado, que se creara en otro
+                    navegador o que pertenezca a otra cuenta.
                   </p>
                   <Link
                     to="/studia/private/"
