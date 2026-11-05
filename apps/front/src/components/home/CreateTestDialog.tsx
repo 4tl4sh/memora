@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import type { Subject } from '@tfm/types'
 
 import { PdfDropzone } from '#/components/home/PdfDropzone'
@@ -11,6 +12,7 @@ import {
 } from '#/components/icons'
 import { SUBJECT_LABELS } from '#/components/landing/data'
 import { iconButtonClass, primaryButtonClass } from '#/components/ui/buttons'
+import { Select } from '#/components/ui/Select'
 import { useUser } from '#/lib/session-storage'
 import { addTest } from '#/lib/tests-storage'
 import { QUESTION_COUNTS, generateTest } from '#/server/generate-test'
@@ -26,6 +28,7 @@ type Step = 'mode' | 'ai'
 const QUESTION_TYPES: { value: TestQuestionType; label: string }[] = [
   { value: 'single', label: 'Respuesta simple' },
   { value: 'multiple', label: 'Respuesta múltiple' },
+  { value: 'true-false', label: 'Verdadero o falso' },
   { value: 'mixed', label: 'Mixta' },
 ]
 
@@ -46,6 +49,7 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   // Cada test se asigna al usuario que lo crea
   const user = useUser()
+  const navigate = useNavigate()
   const [step, setStep] = useState<Step>('mode')
   const [file, setFile] = useState<File | null>(null)
   const [count, setCount] = useState<number | null>(null)
@@ -154,16 +158,16 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
           <div className="mt-6 flex flex-col gap-3">
             <button
               type="button"
-              disabled
-              className={`${modeCardClass} cursor-not-allowed opacity-60`}
+              onClick={() => {
+                dialogRef.current?.close()
+                navigate({ to: '/studia/private/nuevo' })
+              }}
+              className={`${modeCardClass} hover:border-marca-400 hover:bg-marca-50 dark:hover:bg-marca-950/40`}
             >
-              <PencilIcon className="mt-0.5 size-6 shrink-0 text-neutral-500" />
+              <PencilIcon className="mt-0.5 size-6 shrink-0 text-marca-600 dark:text-marca-300" />
               <span>
-                <span className="flex items-center gap-2 font-semibold text-neutral-950 dark:text-neutral-0">
+                <span className="block font-semibold text-neutral-950 dark:text-neutral-0">
                   Manual
-                  <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
-                    Próximamente
-                  </span>
                 </span>
                 <span className="mt-1 block text-sm text-neutral-600 dark:text-neutral-400">
                   Escribe tú las preguntas una a una.
@@ -235,12 +239,11 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
                   <label htmlFor="crear-materia" className={legendClass}>
                     Materia
                   </label>
-                  <select
+                  <Select
                     id="crear-materia"
                     value={subject}
                     disabled={loading}
                     onChange={(e) => setSubject(e.target.value as Subject)}
-                    className="mt-1.5 block w-full rounded-xl border border-neutral-300 bg-neutral-0 px-4 py-2.5 text-neutral-950 focus:border-marca-500 focus:ring-2 focus:ring-marca-500/30 focus:outline-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-0"
                   >
                     <option value="" disabled>
                       Elige una materia
@@ -250,7 +253,7 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
                         {label}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               </>
             )}

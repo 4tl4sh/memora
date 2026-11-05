@@ -8,12 +8,17 @@ import { extractPdfText } from '#/server/pdf-to-text'
 // Tipo de una pregunta concreta
 export type QuestionType = Extract<Question['type'], 'single' | 'multiple'>
 
-// Lo que elige el usuario: todas simples, todas múltiples o mezcla de ambas
-export type TestQuestionType = QuestionType | 'mixed'
+// Lo que elige el usuario: todas de un tipo (simple, múltiple, verdadero/falso) o una mezcla
+export type TestQuestionType = QuestionType | 'true-false' | 'mixed'
 
 export const QUESTION_COUNTS = [5, 10, 15] as const
 
-const QUESTION_TYPES: TestQuestionType[] = ['single', 'multiple', 'mixed']
+const QUESTION_TYPES: TestQuestionType[] = [
+  'single',
+  'multiple',
+  'true-false',
+  'mixed',
+]
 
 const OPTIONS_PER_QUESTION = 4
 
@@ -27,7 +32,7 @@ const MAX_OUTPUT_TOKENS = 4096
 // Lite: peor calidad que flash, pero mucho más rápido y menos saturado en el plan gratuito
 const DEFAULT_MODEL = 'gemini-flash-lite-latest'
 
-// Lo que se pide a Gemini: siempre correctIndexes, y luego se adapta al tipo elegido
+// Lo que se pide a Gemini: correctIndexes en las de opciones y truth en las de verdadero/falso
 const RESPONSE_SCHEMA = {
   type: 'object',
   properties: {
@@ -40,6 +45,7 @@ const RESPONSE_SCHEMA = {
           statement: { type: 'string' },
           options: { type: 'array', items: { type: 'string' } },
           correctIndexes: { type: 'array', items: { type: 'integer' } },
+          truth: { type: 'boolean' },
           explanation: { type: 'string' },
         },
         required: ['statement', 'options', 'correctIndexes', 'explanation'],
@@ -53,21 +59,35 @@ interface AiQuestion {
   statement?: unknown
   options?: unknown
   correctIndexes?: unknown
+  truth?: unknown
   explanation?: unknown
 }
 
 const SINGLE_ANSWER = 'exactamente 1 opción correcta'
 const MULTIPLE_ANSWER = 'entre 2 y 3 opciones correctas'
+const TRUE_FALSE_ANSWER =
+  'una afirmación (no una pregunta) que sea verdadera o falsa; en esas deja options y correctIndexes como arrays vacíos y pon en truth si es verdadera'
+
+// Reparto de un test mixto: un tercio de verdadero/falso y el resto, mitad simples y mitad múltiples
+const mixedSplit = (count: number) => {
+  const trueFalse = Math.floor(count / 3)
+  const multiples = Math.floor((count - trueFalse) / 2)
+  return { trueFalse, multiples, singles: count - trueFalse - multiples }
+}
 
 const buildPrompt = (count: number, type: TestQuestionType, subject: Subject) => {
   let answers: string
   if (type === 'mixed') {
-    const singles = Math.ceil(count / 2)
-    const multiples = count - singles
+    const { singles, multiples, trueFalse } = mixedSplit(count)
     answers = [
-      `Cada pregunta tiene ${OPTIONS_PER_QUESTION} opciones.`,
-      `${singles} preguntas deben tener ${SINGLE_ANSWER} y ${multiples} preguntas deben tener ${MULTIPLE_ANSWER}.`,
-      'Intercala ambos tipos de pregunta a lo largo del test, no las agrupes.',
+      `Las preguntas de opciones tienen ${OPTIONS_PER_QUESTION} opciones.`,
+      `${singles} preguntas deben tener ${SINGLE_ANSWER}, ${multiples} deben tener ${MULTIPLE_ANSWER} y ${trueFalse} deben ser ${TRUE_FALSE_ANSWER}.`,
+      'Intercala los tipos de pregunta a lo largo del test, no los agrupes.',
+    ].join('\n')
+  } else if (type === 'true-false') {
+    answers = [
+      `Todas las preguntas son ${TRUE_FALSE_ANSWER}.`,
+      'Reparte las verdaderas y las falsas de forma equilibrada.',
     ].join('\n')
   } else {
     answers = `Cada pregunta tiene ${OPTIONS_PER_QUESTION} opciones y ${
@@ -85,14 +105,15 @@ const buildPrompt = (count: number, type: TestQuestionType, subject: Subject) =>
   ].join('\n')
 }
 
-// Tipo de cada pregunta: en un test mixto se deduce del número de respuestas correctas
+// Tipo de una pregunta de opciones: en un test mixto se deduce del número de respuestas correctas
 const resolveType = (
   type: TestQuestionType,
   correct: number,
 ): QuestionType | null => {
   if (type === 'mixed') return correct === 1 ? 'single' : correct >= 2 ? 'multiple' : null
   if (type === 'single') return correct === 1 ? type : null
-  return correct >= 2 ? type : null
+  if (type === 'multiple') return correct >= 2 ? type : null
+  return null
 }
 
 // La IA puede equivocarse: se descartan las preguntas mal formadas
@@ -109,8 +130,27 @@ const toQuestions = (raw: unknown, type: TestQuestionType): Question[] => {
           (i): i is number => Number.isInteger(i) && i >= 0 && i < options.length,
         )
       : []
-    if (!statement || options.length !== OPTIONS_PER_QUESTION || options.some((o) => !o))
+    if (!statement) continue
+    const explanation =
+      typeof q.explanation === 'string' && q.explanation.trim()
+        ? { explanation: q.explanation.trim() }
+        : {}
+
+    // Verdadero o falso: sin opciones y con truth. En un test mixto se reconoce por eso mismo
+    const isTrueFalse = typeof q.truth === 'boolean' && options.length === 0
+    if (type === 'true-false' || (type === 'mixed' && isTrueFalse)) {
+      if (typeof q.truth !== 'boolean') continue
+      questions.push({
+        id: questions.length + 1,
+        statement,
+        type: 'true-false',
+        correct: q.truth,
+        ...explanation,
+      })
       continue
+    }
+
+    if (options.length !== OPTIONS_PER_QUESTION || options.some((o) => !o)) continue
     const questionType = resolveType(type, indexes.length)
     if (!questionType) continue
 
@@ -118,9 +158,7 @@ const toQuestions = (raw: unknown, type: TestQuestionType): Question[] => {
       id: questions.length + 1,
       statement,
       options,
-      ...(typeof q.explanation === 'string' && q.explanation.trim()
-        ? { explanation: q.explanation.trim() }
-        : {}),
+      ...explanation,
     }
     questions.push(
       questionType === 'single'

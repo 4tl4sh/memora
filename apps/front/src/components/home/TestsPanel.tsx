@@ -5,12 +5,12 @@ import type { Subject, Test } from '@tfm/types'
 import { ConfirmDeleteDialog } from '#/components/home/ConfirmDeleteDialog'
 import { CreateTestDialog } from '#/components/home/CreateTestDialog'
 import { TestActionsMenu } from '#/components/home/TestActionsMenu'
-import { SearchIcon, SparklesIcon } from '#/components/icons'
+import { PlusIcon, SearchIcon, SparklesIcon } from '#/components/icons'
 import { SUBJECT_LABELS } from '#/components/landing/data'
 import { primaryButtonClass } from '#/components/ui/buttons'
 import { inputBaseClass } from '#/components/ui/inputs'
 import type { SessionUser } from '#/lib/session-storage'
-import { deleteTest, useUserTests } from '#/lib/tests-storage'
+import { deleteTest, duplicateAsManual, useUserTests } from '#/lib/tests-storage'
 
 // Búsqueda sin mayúsculas ni tildes: «quimica» encuentra «Química»
 const normalize = (text: string) =>
@@ -47,6 +47,8 @@ export function TestsPanel({ user }: { user: SessionUser }) {
       (!activeFilter || test.subject === activeFilter) &&
       (!search || normalize(test.title).includes(search)),
   )
+  const editTestPage = (id: Test['id']) =>
+    navigate({ to: '/studia/private/editar/$id', params: { id: String(id) } })
   const startTest = (test: Test) =>
     navigate({ to: '/tests/$id', params: { id: String(test.id) } })
 
@@ -76,6 +78,7 @@ export function TestsPanel({ user }: { user: SessionUser }) {
           onClick={openCreate}
           className={primaryButtonClass}
         >
+          <PlusIcon className="size-4" />
           Crear test
         </button>
       </div>
@@ -172,6 +175,16 @@ export function TestsPanel({ user }: { user: SessionUser }) {
                     {test.title}
                   </button>
                   <span className="flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-400">
+                    {test.source.kind !== 'Manual' && (
+                      <span
+                        title="Generado con IA"
+                        className="inline-flex items-center gap-1 rounded-full bg-marca-50 px-2.5 py-0.5 font-medium text-marca-800 dark:bg-marca-950/60 dark:text-marca-200"
+                      >
+                        <SparklesIcon className="size-3.5" />
+                        IA
+                        <span className="sr-only"> (generado con IA)</span>
+                      </span>
+                    )}
                     <span className="rounded-full bg-marca-50 px-2.5 py-0.5 font-medium text-marca-800 dark:bg-marca-950/60 dark:text-marca-200">
                       {SUBJECT_LABELS[test.subject] ?? test.subject}
                     </span>
@@ -185,6 +198,17 @@ export function TestsPanel({ user }: { user: SessionUser }) {
                   testId={test.id}
                   title={test.title}
                   onStart={() => startTest(test)}
+                  onEdit={() => editTestPage(test.id)}
+                  duplicateLabel={
+                    test.source.kind === 'Manual'
+                      ? 'Duplicar test'
+                      : 'Duplicar como manual'
+                  }
+                  onDuplicate={() => {
+                    // La copia es manual y se abre para editarla
+                    const copy = duplicateAsManual(test, user.id)
+                    editTestPage(copy.id)
+                  }}
                   onDelete={() => setToDelete(test)}
                 />
               </li>

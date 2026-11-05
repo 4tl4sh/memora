@@ -1,5 +1,6 @@
 import { useMemo, useSyncExternalStore } from 'react'
-import type { NewTest, Test } from '@tfm/types'
+import { updateTest } from '@tfm/types'
+import type { NewTest, Test, TestChanges } from '@tfm/types'
 
 // Tests de los usuarios: de momento viven solo en localStorage, sin servidor.
 // Cada test pertenece a quien lo creó (ownerId) y solo él lo ve.
@@ -62,6 +63,30 @@ export const addTest = (newTest: NewTest, ownerId: Test['ownerId']): Test => {
   saveTests([...tests, test])
   return test
 }
+
+// Aplica los cambios a un test (updateTest de @tfm/types pone la fecha de modificación)
+export const editTest = (id: Test['id'], changes: TestChanges) =>
+  saveTests(
+    readTests().map((t) =>
+      t.id === id ? updateTest(t, changes, new Date().toISOString()) : t,
+    ),
+  )
+
+// Copia un test como manual: no arrastra el origen (PDF) y se puede editar libremente
+export const duplicateAsManual = (
+  test: Test,
+  ownerId: Test['ownerId'],
+): Test =>
+  addTest(
+    {
+      title: `${test.title} (copia)`,
+      subject: test.subject,
+      status: test.status,
+      source: { kind: 'Manual' },
+      questions: structuredClone(test.questions),
+    },
+    ownerId,
+  )
 
 export const deleteTest = (id: Test['id']) =>
   saveTests(readTests().filter((t) => t.id !== id))
