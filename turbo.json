@@ -29,7 +29,8 @@
     },
     "generate-routes": {
       "outputs": [
-        "src/routeTree.gen.ts"
+        "src/routeTree.gen.ts",
+        ".vercel/**"
       ]
     },
     "typecheck": {

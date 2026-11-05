@@ -5,7 +5,8 @@ import type { User } from '@tfm/types'
 
 export const USERS_KEY = 'studia_users'
 
-export type StoredUser = User & { password: string }
+// sessionToken: token aleatorio de la sesión abierta (ver session-storage.ts)
+export type StoredUser = User & { password: string; sessionToken?: string }
 
 export interface Registration {
   name: string
@@ -83,5 +84,16 @@ export const authenticate = (
   )
 }
 
-export const findUserById = (id: User['id']): StoredUser | undefined =>
-  readUsers().find((u) => u.id === id)
+export const findUserByToken = (token: string): StoredUser | undefined =>
+  readUsers().find((u) => u.sessionToken === token)
+
+// Asocia (o con null, invalida) el token de sesión de un usuario
+export const setSessionToken = (id: User['id'], token: string | null) => {
+  saveUsers(
+    readUsers().map((u) => {
+      if (u.id !== id) return u
+      const { sessionToken: _, ...rest } = u
+      return token ? { ...rest, sessionToken: token } : rest
+    }),
+  )
+}

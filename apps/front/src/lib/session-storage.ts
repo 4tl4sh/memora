@@ -1,10 +1,17 @@
 import { useSyncExternalStore } from 'react'
 import type { User } from '@tfm/types'
 
-import { USERS_KEY, findUserById } from '#/lib/users-storage'
+import {
+  USERS_KEY,
+  findUserByToken,
+  setSessionToken,
+} from '#/lib/users-storage'
 
-// Sesión simulada: se guarda el id del usuario registrado (ver users-storage.ts) en
-// localStorage para que sobreviva al cambiar de página y al recargar.
+// Sesión simulada: al hacer login se genera un token aleatorio, se asocia al usuario
+// registrado (ver users-storage.ts) y se guarda en localStorage para que sobreviva al
+// cambiar de página y al recargar. Así no basta con escribir otro id para suplantar a
+// otro usuario. Limitación: todo vive en el navegador, así que quien lea studia_users
+// ve los tokens; la solución real es una sesión validada en servidor (cookie HttpOnly).
 
 const USER_KEY = 'studia_user'
 
@@ -14,19 +21,18 @@ export type SessionUser = Pick<User, 'id' | 'name' | 'email'>
 let cachedKey: string | null = null
 let cachedUser: SessionUser | null = null
 
-const readUserId = (): number | null => {
-  let raw: string | null = null
+const readToken = (): string | null => {
   try {
-    raw = localStorage.getItem(USER_KEY)
-  } catch {}
-  const id = raw ? Number(raw) : NaN
-  return Number.isInteger(id) ? id : null
+    return localStorage.getItem(USER_KEY) || null
+  } catch {
+    return null
+  }
 }
 
-// Usuario de la sesión, o null si no hay sesión o apunta a un usuario que ya no existe
+// Usuario de la sesión, o null si no hay sesión o el token no es de ningún usuario
 export const readUser = (): SessionUser | null => {
-  const id = readUserId()
-  const stored = id === null ? undefined : findUserById(id)
+  const token = readToken()
+  const stored = token === null ? undefined : findUserByToken(token)
   const key = stored ? `${stored.id}|${stored.name}|${stored.email}` : null
   if (key === cachedKey) return cachedUser
   cachedKey = key
@@ -51,13 +57,18 @@ const subscribe = (listener: () => void) => {
 }
 
 export const setUser = (id: User['id']) => {
+  const token = crypto.randomUUID()
+  setSessionToken(id, token)
   try {
-    localStorage.setItem(USER_KEY, String(id))
+    localStorage.setItem(USER_KEY, token)
   } catch {}
   notify()
 }
 
 export const clearUser = () => {
+  // Se invalida el token para que no se pueda reutilizar tras cerrar sesión
+  const user = readUser()
+  if (user) setSessionToken(user.id, null)
   try {
     localStorage.removeItem(USER_KEY)
   } catch {}

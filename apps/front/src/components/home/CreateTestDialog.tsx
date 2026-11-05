@@ -13,8 +13,12 @@ import { SUBJECT_LABELS } from '#/components/landing/data'
 import { iconButtonClass, primaryButtonClass } from '#/components/ui/buttons'
 import { useUser } from '#/lib/session-storage'
 import { addTest } from '#/lib/tests-storage'
-import { QUESTION_COUNTS, generateTest } from '#/server/generate-test'
-import type { TestQuestionType } from '#/server/generate-test'
+import {
+  AI_MODELS,
+  QUESTION_COUNTS,
+  generateTest,
+} from '#/server/generate-test'
+import type { AiModel, TestQuestionType } from '#/server/generate-test'
 
 interface CreateTestDialogProps {
   open: boolean
@@ -26,6 +30,7 @@ type Step = 'mode' | 'ai'
 const QUESTION_TYPES: { value: TestQuestionType; label: string }[] = [
   { value: 'single', label: 'Respuesta simple' },
   { value: 'multiple', label: 'Respuesta múltiple' },
+  { value: 'true-false', label: 'Verdadero o falso' },
   { value: 'mixed', label: 'Mixta' },
 ]
 
@@ -51,6 +56,7 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
   const [count, setCount] = useState<number | null>(null)
   const [type, setType] = useState<TestQuestionType | null>(null)
   const [subject, setSubject] = useState<Subject | ''>('')
+  const [model, setModel] = useState<AiModel | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -67,6 +73,7 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
     setCount(null)
     setType(null)
     setSubject('')
+    setModel(null)
     setLoading(false)
     setError(null)
   }
@@ -74,11 +81,11 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
   // Mientras se genera el test no se deja cerrar
   const close = () => !loading && onClose()
 
-  const canCreate = Boolean(file && count && type && subject)
+  const canCreate = Boolean(file && count && type && model && subject)
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!file || !count || !type || !subject || loading) return
+    if (!file || !count || !type || !model || !subject || loading) return
     setLoading(true)
     setError(null)
     try {
@@ -87,6 +94,7 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
       formData.append('count', String(count))
       formData.append('type', type)
       formData.append('subject', subject)
+      formData.append('model', model)
       // El servidor extrae el texto y se lo pasa a la IA: aquí solo llegan las preguntas
       const { title, pages, questions } = await generateTest({ data: formData })
       if (!user)
@@ -223,6 +231,25 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
                           value={option.value}
                           checked={type === option.value}
                           onChange={() => setType(option.value)}
+                          className="sr-only"
+                        />
+                        {option.label}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <fieldset disabled={loading}>
+                  <legend className={legendClass}>Modelo</legend>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {AI_MODELS.map((option) => (
+                      <label key={option.value} className={radioClass}>
+                        <input
+                          type="radio"
+                          name="model"
+                          value={option.value}
+                          checked={model === option.value}
+                          onChange={() => setModel(option.value)}
                           className="sr-only"
                         />
                         {option.label}

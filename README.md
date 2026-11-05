@@ -6,7 +6,7 @@ Aplicación web para estudiar con tests: subes tu temario en PDF y una IA te pro
 
 ## Studia
 
-**Studia** es una aplicación para estudiar con tests. Subes un PDF con tu temario, eliges cuántas preguntas quieres y de qué tipo (respuesta simple, múltiple o mixta), y la IA de Google (Gemini) te propone un test. Lo guardas en tu panel y lo haces tantas veces como quieras hasta que te lo sabes.
+**Studia** es una aplicación para estudiar con tests. Subes un PDF con tu temario, eliges cuántas preguntas quieres y de qué tipo (respuesta simple, múltiple o mixta), y la IA que elijas (Gemini o Groq) te propone un test. Lo guardas en tu panel y lo haces tantas veces como quieras hasta que te lo sabes.
 
 > Antes se llamaba **Memora**. El repositorio se renombró a Studia cuando el nombre pasó a ser el definitivo. La entrega del laboratorio del módulo 1 (solo la landing, con Vite y Tailwind) sigue en la rama [`lab-01`](https://github.com/4tl4sh/studia/tree/lab-01).
 
@@ -17,7 +17,7 @@ Aplicación web para estudiar con tests: subes tu temario en PDF y una IA te pro
 | **Landing** (`/studia/`) | Cabecera con selector de tema, modo oscuro y menú móvil. Hero, ejemplos de tests, cómo funciona, opiniones, planes con destacado, FAQ y pie con newsletter. Los datos, precios y opiniones son inventados |
 | **Acceso** | Login **simulado**: acepta cualquier usuario y contraseña, y guarda la sesión en el navegador. No hay cuentas reales |
 | **Panel** (`/studia/private/`) | Lista de tus tests con filtro por materia, menú de acciones por test (realizar o borrar, con confirmación) y estado vacío si todavía no hay ninguno |
-| **Crear un test** | Con asistencia de IA: subes un PDF (hasta 5 MB), eliges 5, 10 o 15 preguntas, el tipo (simple, múltiple o mixta) y la materia. El modo manual está en la interfaz como «Próximamente» |
+| **Crear un test** | Con asistencia de IA: subes un PDF (hasta 5 MB), eliges 5, 10 o 15 preguntas, el tipo (simple, múltiple o mixta), el modelo (Gemini Flash o Groq) y la materia. El modo manual está en la interfaz como «Próximamente» |
 | **Hacer un test** (`/tests/:id`) | Todas las preguntas en una página, con el progreso siempre a la vista y botón de finalizar. Al terminar se muestra el resultado con confeti |
 | **Preferencias** | Tres temas de color (Teal, Azul Klein y Amarillo) y modo oscuro, combinables |
 
@@ -28,18 +28,20 @@ Los tests y la sesión se guardan en `localStorage`: por ahora **no hay base de 
 La generación ocurre en el servidor, en una *server function* de TanStack Start (`apps/front/src/server/generate-test.ts`):
 
 1. El navegador envía el PDF y las opciones elegidas.
-2. El servidor extrae el texto con `pdf-parse` (se recorta a 60.000 caracteres).
-3. Pide a Gemini un JSON con un esquema fijo (título, enunciados, opciones, respuestas correctas y una explicación corta).
+2. El servidor extrae el texto con `pdf-parse` (se recorta a 60.000 caracteres para Gemini y a 20.000 para Groq, que en el plan gratuito admite menos tokens por minuto).
+3. Pide al modelo elegido un JSON con un esquema fijo (título, enunciados, opciones, respuestas correctas y una explicación corta).
 4. Valida y adapta la respuesta al tipo pedido, y solo devuelve al navegador las preguntas, no el texto del PDF.
 
 El modelo por defecto es `gemini-flash-lite-latest` (rápido y con menos saturación en el plan gratuito). Se puede cambiar con `GEMINI_MODEL`.
+
+Con Groq se usa por defecto `openai/gpt-oss-20b`, de los más rápidos de Groq, con razonamiento bajo y JSON con esquema estricto. Se puede cambiar con `GROQ_MODEL`. Groq se llama con `fetch` a su API compatible con OpenAI, sin SDK.
 
 ## Stack
 
 - **TanStack Start** + **TanStack Router** (rutas por archivos) sobre **Vite**, con **Nitro** como servidor
 - **React 19** y **TypeScript**
 - **Tailwind CSS v4**: todo el tema está en `apps/front/src/styles.css`, con colores en `oklch()` y sin valores sueltos
-- **Gemini** (`@google/genai`) para generar los tests y **pdf-parse** para leer los PDF
+- **Gemini** (`@google/genai`) y **Groq** (API REST) para generar los tests y **pdf-parse** para leer los PDF
 - **pnpm** (workspaces) y **Turborepo** para el monorepo
 - Tipografías Bricolage Grotesque e Inter con Fontsource
 
@@ -82,9 +84,11 @@ Crea el archivo `apps/front/.env` (está en el `.gitignore`: nunca se sube):
 ```bash
 GEMINI_API_KEY=tu_clave_de_google_ai_studio
 # GEMINI_MODEL=gemini-flash-lite-latest   # opcional
+GROQ_API_KEY=tu_clave_de_groq
+# GROQ_MODEL=openai/gpt-oss-20b           # opcional
 ```
 
-Sin la clave, todo funciona menos la generación de tests con IA. Reinicia el servidor después de cambiar el `.env`: se lee al arrancar.
+Sin una clave, todo funciona menos la generación de tests con ese modelo. Reinicia el servidor después de cambiar el `.env`: se lee al arrancar.
 
 ### MongoDB (opcional)
 
@@ -104,7 +108,7 @@ No hace falta ningún archivo de configuración: al compilar en Vercel, Nitro de
 - **Root Directory**: `apps/front`
 - **Application Preset**: Nitro
 - **Install Command**: `pnpm install --config.strictDepBuilds=false`
-- **Variable de entorno**: `GEMINI_API_KEY` (en Production y Preview)
+- **Variables de entorno**: `GEMINI_API_KEY` y `GROQ_API_KEY` (en Production y Preview)
 
 Limitaciones conocidas: el cuerpo de una petición a una función de Vercel tiene un límite de 4,5 MB, así que los PDF entre 4,5 y 5 MB fallarían. Y la base de datos, cuando se conecte, tendrá que estar fuera de Vercel (por ejemplo, MongoDB Atlas).
 

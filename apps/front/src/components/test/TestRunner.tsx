@@ -1,10 +1,14 @@
 import { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { checkAnswer } from '@tfm/types'
 import type { Answer, Question, Test } from '@tfm/types'
 
 import { SUBJECT_LABELS } from '#/components/landing/data'
-import { primaryButtonClass } from '#/components/ui/buttons'
+import { ArrowLeftIcon } from '#/components/icons'
+import {
+  primaryButtonClass,
+  secondaryButtonClass,
+} from '#/components/ui/buttons'
 import { ResultDialog } from './ResultDialog'
 
 type Given = Answer['given']
@@ -68,6 +72,13 @@ export function TestRunner({ test }: { test: Test }) {
       aria-labelledby="titulo-test"
       className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pt-10 sm:px-6 lg:px-8"
     >
+      <Link
+        to="/studia/private/"
+        className={`${secondaryButtonClass} mb-6 gap-2 self-start`}
+      >
+        <ArrowLeftIcon className="size-4" />
+        Atrás
+      </Link>
       <p className="flex items-center gap-3 text-sm font-semibold tracking-wider text-marca-700 uppercase dark:text-marca-300">
         Test #{test.id}
         <span className="rounded-full bg-marca-50 px-2.5 py-0.5 font-medium tracking-normal text-marca-800 normal-case dark:bg-marca-950/60 dark:text-marca-200">
