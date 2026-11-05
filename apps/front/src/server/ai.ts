@@ -106,12 +106,6 @@ export const parseAiResponse = (raw: string | undefined) => {
 const SINGLE_ANSWER = 'exactamente 1 opción correcta'
 const MULTIPLE_ANSWER = 'entre 2 y 3 opciones correctas'
 
-// Verdadero o falso: se pide con el mismo esquema que el resto, con 2 opciones fijas
-const TRUE_FALSE_OPTIONS = ['Verdadero', 'Falso']
-const TRUE_FALSE_ANSWER = `el enunciado es una afirmación, options es exactamente ${JSON.stringify(
-  TRUE_FALSE_OPTIONS,
-)} y correctIndexes es [0] si la afirmación es verdadera o [1] si es falsa`
-
 export const buildPrompt = (
   count: number,
   type: TestQuestionType,
@@ -119,22 +113,13 @@ export const buildPrompt = (
 ) => {
   let answers: string
   if (type === 'mixed') {
-    // Reparto en tres: lo que sobra va primero a simples y luego a múltiples
-    const base = Math.floor(count / 3)
-    const rest = count % 3
-    const singles = base + (rest > 0 ? 1 : 0)
-    const multiples = base + (rest > 1 ? 1 : 0)
-    const trueFalse = base
+    // Mitad y mitad; si es impar, sobra una simple
+    const singles = Math.ceil(count / 2)
+    const multiples = count - singles
     answers = [
-      `${singles} preguntas de respuesta simple: ${OPTIONS_PER_QUESTION} opciones y ${SINGLE_ANSWER}.`,
-      `${multiples} preguntas de respuesta múltiple: ${OPTIONS_PER_QUESTION} opciones y ${MULTIPLE_ANSWER}.`,
-      `${trueFalse} preguntas de verdadero o falso: ${TRUE_FALSE_ANSWER}.`,
-      'Intercala los tres tipos de pregunta a lo largo del test, no los agrupes.',
-    ].join('\n')
-  } else if (type === 'true-false') {
-    answers = [
-      `Todas las preguntas son de verdadero o falso: ${TRUE_FALSE_ANSWER}.`,
-      'Equilibra afirmaciones verdaderas y falsas.',
+      `Cada pregunta tiene ${OPTIONS_PER_QUESTION} opciones.`,
+      `${singles} preguntas deben tener ${SINGLE_ANSWER} y ${multiples} preguntas deben tener ${MULTIPLE_ANSWER}.`,
+      'Intercala ambos tipos de pregunta a lo largo del test, no las agrupes.',
     ].join('\n')
   } else {
     answers = `Cada pregunta tiene ${OPTIONS_PER_QUESTION} opciones y ${
@@ -152,30 +137,18 @@ export const buildPrompt = (
   ].join('\n')
 }
 
-// Tipo de cada pregunta según sus opciones y respuestas correctas; null si no
-// encaja con lo que eligió el usuario
+// Tipos de pregunta que genera la IA
+type GeneratedType = Exclude<QuestionType, 'true-false'>
+
+// Tipo de cada pregunta: en un test mixto se deduce del número de respuestas
+// correctas; null si no encaja con lo que eligió el usuario
 export const resolveType = (
   type: TestQuestionType,
-  options: number,
   correct: number,
-): QuestionType | null => {
-  let resolved: QuestionType | null = null
-  if (options === TRUE_FALSE_OPTIONS.length && correct === 1)
-    resolved = 'true-false'
-  else if (options === OPTIONS_PER_QUESTION && correct === 1)
-    resolved = 'single'
-  else if (options === OPTIONS_PER_QUESTION && correct >= 2)
-    resolved = 'multiple'
+): GeneratedType | null => {
+  const resolved: GeneratedType | null =
+    correct === 1 ? 'single' : correct >= 2 ? 'multiple' : null
   return resolved && (type === 'mixed' || type === resolved) ? resolved : null
-}
-
-// Valor de la opción marcada en una pregunta de verdadero o falso, por su texto
-// (no por su posición, por si la IA las devuelve en otro orden)
-export const trueFalseValue = (option: string): boolean | null => {
-  const text = option.toLowerCase()
-  if (text === 'verdadero' || text === 'true') return true
-  if (text === 'falso' || text === 'false') return false
-  return null
 }
 
 // La IA puede equivocarse: se descartan las preguntas mal formadas
@@ -193,39 +166,30 @@ export const toQuestions = (
     const indexes = [...new Set(q.correctIndexes)].filter(
       (i) => i >= 0 && i < options.length,
     )
-    if (!statement || options.some((o) => !o)) continue
-    const questionType = resolveType(type, options.length, indexes.length)
+    if (
+      !statement ||
+      options.length !== OPTIONS_PER_QUESTION ||
+      options.some((o) => !o)
+    )
+      continue
+    const questionType = resolveType(type, indexes.length)
     if (!questionType) continue
 
     const base = {
       id: questions.length + 1,
       statement,
+      options,
       ...(q.explanation?.trim() ? { explanation: q.explanation.trim() } : {}),
     }
-    if (questionType === 'true-false') {
-      const values = options.map(trueFalseValue)
-      // Tienen que ser justo una opción verdadera y otra falsa
-      if (!values.includes(true) || !values.includes(false)) continue
-      questions.push({
-        ...base,
-        type: questionType,
-        correct: values[indexes[0]] === true,
-      })
-    } else if (questionType === 'single') {
-      questions.push({
-        ...base,
-        options,
-        type: questionType,
-        correctIndex: indexes[0],
-      })
-    } else {
-      questions.push({
-        ...base,
-        options,
-        type: questionType,
-        correctIndexes: indexes.sort((a, b) => a - b),
-      })
-    }
+    questions.push(
+      questionType === 'single'
+        ? { ...base, type: questionType, correctIndex: indexes[0] }
+        : {
+            ...base,
+            type: questionType,
+            correctIndexes: indexes.sort((a, b) => a - b),
+          },
+    )
   }
   return questions
 }

@@ -39,15 +39,9 @@ export type RegisterValues = z.input<typeof registerSchema>
 
 export const QUESTION_COUNTS = [5, 10, 15] as const
 
-export const testQuestionTypeSchema = z.enum([
-  'single',
-  'multiple',
-  'true-false',
-  'mixed',
-])
+export const testQuestionTypeSchema = z.enum(['single', 'multiple', 'mixed'])
 
-// Lo que elige el usuario: todas simples, todas múltiples, todas de verdadero o
-// falso, o mezcla de los tres tipos
+// Lo que elige el usuario: todas simples, todas múltiples o mezcla de ambas
 export type TestQuestionType = z.infer<typeof testQuestionTypeSchema>
 
 // Proveedor de IA que elige el usuario: el prompt y la respuesta son los mismos

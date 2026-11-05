@@ -15,9 +15,10 @@ const pdf = new File(['%PDF'], 'tema1.pdf', { type: 'application/pdf' })
 const questions = [
   {
     id: 1,
-    type: 'true-false' as const,
-    statement: 'Afirmación',
-    correct: true,
+    type: 'single' as const,
+    statement: '¿En qué año empezó la Revolución francesa?',
+    options: ['1689', '1789', '1815', '1848'],
+    correctIndex: 1,
   },
 ]
 
@@ -29,7 +30,7 @@ const openAiForm = async (user: ReturnType<typeof userEvent.setup>) => {
 const fillForm = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.upload(screen.getByLabelText('Temario en PDF'), pdf)
   await user.click(screen.getByRole('radio', { name: '5' }))
-  await user.click(screen.getByRole('radio', { name: 'Verdadero o falso' }))
+  await user.click(screen.getByRole('radio', { name: 'Mixta' }))
   await user.click(screen.getByRole('radio', { name: 'Groq' }))
   await user.selectOptions(screen.getByLabelText('Materia'), 'historia')
 }
@@ -75,7 +76,7 @@ describe('CreateTestDialog', () => {
     expect(data).toBeInstanceOf(FormData)
     expect(Object.fromEntries((data as FormData).entries())).toMatchObject({
       count: '5',
-      type: 'true-false',
+      type: 'mixed',
       subject: 'historia',
       model: 'groq',
     })

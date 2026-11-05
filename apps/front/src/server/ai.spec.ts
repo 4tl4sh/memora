@@ -17,18 +17,18 @@ const aiQuestion = (overrides: Record<string, unknown> = {}) => ({
 })
 
 describe('resolveType', () => {
-  it('debería reconocer cada tipo por sus opciones y respuestas correctas', () => {
-    expect(resolveType('mixed', 4, 1)).toBe('single')
-    expect(resolveType('mixed', 4, 2)).toBe('multiple')
-    expect(resolveType('mixed', 2, 1)).toBe('true-false')
+  it('en un test mixto debería deducir el tipo por las respuestas correctas', () => {
+    expect(resolveType('mixed', 1)).toBe('single')
+    expect(resolveType('mixed', 2)).toBe('multiple')
   })
 
   it('debería descartar una pregunta que no es del tipo pedido', () => {
-    expect(resolveType('single', 4, 2)).toBeNull()
+    expect(resolveType('single', 2)).toBeNull()
+    expect(resolveType('multiple', 1)).toBeNull()
   })
 
   it('debería descartar una pregunta sin respuestas correctas', () => {
-    expect(resolveType('mixed', 4, 0)).toBeNull()
+    expect(resolveType('mixed', 0)).toBeNull()
   })
 })
 
@@ -72,12 +72,12 @@ describe('toQuestions', () => {
     expect(question).toMatchObject({ type: 'multiple', correctIndexes: [0, 3] })
   })
 
-  it('debería leer verdadero o falso por el texto, no por la posición', () => {
-    const [question] = toQuestions(
-      [aiQuestion({ options: ['Falso', 'Verdadero'], correctIndexes: [1] })],
-      'true-false',
+  it('debería descartar una pregunta que no tiene 4 opciones', () => {
+    const questions = toQuestions(
+      [aiQuestion({ options: ['Verdadero', 'Falso'], correctIndexes: [0] })],
+      'mixed',
     )
-    expect(question).toMatchObject({ type: 'true-false', correct: true })
+    expect(questions).toEqual([])
   })
 })
 
@@ -106,11 +106,12 @@ describe('buildPrompt', () => {
     expect(prompt).toContain('Historia')
   })
 
-  it('en un test mixto debería repartir las preguntas entre los tres tipos', () => {
+  it('en un test mixto debería repartir las preguntas entre simples y múltiples', () => {
     const prompt = buildPrompt(5, 'mixed', 'quimica')
-    expect(prompt).toContain('2 preguntas de respuesta simple')
-    expect(prompt).toContain('2 preguntas de respuesta múltiple')
-    expect(prompt).toContain('1 preguntas de verdadero o falso')
+    expect(prompt).toContain(
+      '3 preguntas deben tener exactamente 1 opción correcta y 2 preguntas deben tener entre 2 y 3 opciones correctas',
+    )
+    expect(prompt).not.toContain('verdadero o falso')
   })
 })
 

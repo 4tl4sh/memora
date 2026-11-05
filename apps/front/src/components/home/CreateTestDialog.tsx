@@ -27,7 +27,6 @@ type Step = 'mode' | 'ai'
 const QUESTION_TYPES: { value: TestQuestionType; label: string }[] = [
   { value: 'single', label: 'Respuesta simple' },
   { value: 'multiple', label: 'Respuesta múltiple' },
-  { value: 'true-false', label: 'Verdadero o falso' },
   { value: 'mixed', label: 'Mixta' },
 ]
 
