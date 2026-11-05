@@ -144,3 +144,36 @@ export const formatPrice = (euros: number) =>
 
 // Racha que enseña la tarjeta flotante del hero
 export const heroStats: Pick<StudyStats, 'streakDays'> = { streakDays: 7 }
+
+export interface FaqItem {
+  question: string
+  answer: string
+}
+
+export const faqs: FaqItem[] = [
+  {
+    question: '¿Qué tengo que subir para crear un test?',
+    answer:
+      'Pega el texto de tus apuntes o sube un PDF. Si prefieres hacerlo a mano, empieza un test en blanco y escribe tú las preguntas.',
+  },
+  {
+    question: '¿Puedo cambiar las preguntas que propone la IA?',
+    answer:
+      'Sí. La propuesta es un borrador: editas el enunciado y las respuestas, borras lo que no te convenza y añades las tuyas antes de guardar.',
+  },
+  {
+    question: '¿Qué tipos de pregunta hay?',
+    answer:
+      'Respuesta única, respuesta múltiple, verdadero o falso y respuesta corta. Tú eliges cuáles quieres al generar el test.',
+  },
+  {
+    question: '¿Funciona bien desde el móvil?',
+    answer:
+      'Está pensado para eso. Las opciones son grandes, el botón principal queda al alcance del pulgar y puedes repasar en cualquier momento.',
+  },
+  {
+    question: '¿Puedo cancelar cuando quiera?',
+    answer:
+      'Claro. No hay permanencia: puedes cambiar de plan o volver al gratuito en cualquier momento y conservas tus tests.',
+  },
+]
