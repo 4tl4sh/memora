@@ -8,7 +8,7 @@ import { USERS_KEY, findUserById } from '#/lib/users-storage'
 
 const USER_KEY = 'studia_user'
 
-export type SessionUser = Pick<User, 'id' | 'name' | 'email'>
+export type SessionUser = Pick<User, 'id' | 'name' | 'email' | 'planId'>
 
 // useSyncExternalStore necesita la misma referencia mientras no cambie nada
 let cachedKey: string | null = null
@@ -27,11 +27,16 @@ const readUserId = (): number | null => {
 export const readUser = (): SessionUser | null => {
   const id = readUserId()
   const stored = id === null ? undefined : findUserById(id)
-  const key = stored ? `${stored.id}|${stored.name}|${stored.email}` : null
+  const key = stored ? `${stored.id}|${stored.name}|${stored.email}|${stored.planId}` : null
   if (key === cachedKey) return cachedUser
   cachedKey = key
   cachedUser = stored
-    ? { id: stored.id, name: stored.name, email: stored.email }
+    ? {
+        id: stored.id,
+        name: stored.name,
+        email: stored.email,
+        planId: stored.planId,
+      }
     : null
   return cachedUser
 }

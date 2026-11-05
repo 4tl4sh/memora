@@ -73,7 +73,11 @@ function Studia() {
     : { onStart: () => setLoginOpen(true) }
 
   const actions = user ? (
-    <UserMenu name={user.name} onLogout={logout} />
+    <UserMenu
+            name={user.name}
+            planId={user.planId}
+            onLogout={logout}
+          />
   ) : (
     <>
       {/* En móvil no cabe en la barra: va al final del menú (menuAction) */}

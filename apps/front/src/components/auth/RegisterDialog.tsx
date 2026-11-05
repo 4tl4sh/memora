@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import type { PlanId } from '@tfm/types'
 
 import {
   errorClass,
@@ -10,6 +11,14 @@ import {
   submitClass,
 } from '#/components/auth/form-classes'
 import { CloseIcon } from '#/components/icons'
+import { formatPrice, plans } from '#/components/landing/data'
+import {
+  formatCardNumber,
+  formatExpiry,
+  isValidCardNumber,
+  isValidCvv,
+  isValidExpiry,
+} from '#/lib/card'
 import { registerUser } from '#/lib/users-storage'
 import type { StoredUser } from '#/lib/users-storage'
 
@@ -33,6 +42,9 @@ export function RegisterDialog({
   const dialogRef = useRef<HTMLDialogElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const [error, setError] = useState<string | null>(null)
+  const [planId, setPlanId] = useState<PlanId>('gratis')
+  const plan = plans.find((p) => p.id === planId) ?? plans[0]
+  const paid = plan.pricePerMonth > 0
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -53,6 +65,7 @@ export function RegisterDialog({
       name: data.get('nombre') as string,
       email: data.get('email') as string,
       password: data.get('password') as string,
+      planId,
     })
     if (!result.ok) {
       setError('Ya existe una cuenta con ese email.')
@@ -71,10 +84,11 @@ export function RegisterDialog({
       onClose={() => {
         formRef.current?.reset()
         setError(null)
+        setPlanId('gratis')
         onClose()
       }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
-      className="m-auto w-[min(100%-2rem,26rem)] rounded-3xl border border-neutral-200 bg-neutral-0 p-0 text-neutral-900 shadow-2xl backdrop:bg-neutral-950/50 backdrop:backdrop-blur-sm open:motion-safe:animate-aparecer dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(100%-2rem,28rem)] overflow-y-auto rounded-3xl border border-neutral-200 bg-neutral-0 p-0 text-neutral-900 shadow-2xl backdrop:bg-neutral-950/50 backdrop:backdrop-blur-sm open:motion-safe:animate-aparecer dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
     >
       <div className="p-6 sm:p-8">
         <div className="flex items-start justify-between gap-4">
@@ -160,11 +174,122 @@ export function RegisterDialog({
               Mínimo {MIN_PASSWORD} caracteres.
             </p>
           </div>
+          <fieldset>
+            <legend className={labelClass}>Plan</legend>
+            <div className="mt-1.5 flex flex-col gap-2">
+              {plans.map((p) => (
+                <label
+                  key={p.id}
+                  className="flex cursor-pointer items-center gap-3 rounded-xl border border-neutral-300 px-4 py-2.5 transition hover:border-marca-400 has-checked:border-marca-600 has-checked:bg-marca-50 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-marca-500 dark:border-neutral-700 dark:has-checked:border-marca-400 dark:has-checked:bg-marca-950/40"
+                >
+                  <input
+                    type="radio"
+                    name="plan"
+                    value={p.id}
+                    checked={planId === p.id}
+                    onChange={() => setPlanId(p.id)}
+                    className="size-4 shrink-0 accent-marca-600 dark:accent-marca-400"
+                  />
+                  <span className="flex-1 text-sm font-semibold text-neutral-900 dark:text-neutral-50">
+                    {p.name}
+                  </span>
+                  <span className="text-sm text-neutral-600 dark:text-neutral-300">
+                    {p.pricePerMonth === 0
+                      ? 'Gratis'
+                      : `${formatPrice(p.pricePerMonth)} €/mes`}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          {paid && (
+            <fieldset className="flex flex-col gap-4 rounded-2xl border border-neutral-200 p-4 dark:border-neutral-700">
+              <legend className="px-1 text-sm font-semibold text-neutral-800 dark:text-neutral-100">
+                Datos de pago
+              </legend>
+              <div>
+                <label htmlFor="registro-tarjeta" className={labelClass}>
+                  Número de tarjeta
+                </label>{' '}
+                <input
+                  id="registro-tarjeta"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="cc-number"
+                  required
+                  maxLength={23}
+                  placeholder="1234 5678 9012 3456"
+                  onInput={(e) => {
+                    const el = e.currentTarget
+                    el.value = formatCardNumber(el.value)
+                    el.setCustomValidity(
+                      isValidCardNumber(el.value) ? '' : 'Número no válido',
+                    )
+                  }}
+                  className={inputClass}
+                />
+                <p className={errorClass}>Escribe un número de tarjeta válido.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="registro-caducidad" className={labelClass}>
+                    Caducidad
+                  </label>{' '}
+                  <input
+                    id="registro-caducidad"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="cc-exp"
+                    required
+                    maxLength={5}
+                    placeholder="MM/AA"
+                    onInput={(e) => {
+                      const el = e.currentTarget
+                      el.value = formatExpiry(el.value)
+                      el.setCustomValidity(
+                        isValidExpiry(el.value) ? '' : 'Fecha no válida',
+                      )
+                    }}
+                    className={inputClass}
+                  />
+                  <p className={errorClass}>Fecha no válida o caducada.</p>
+                </div>
+                <div>
+                  <label htmlFor="registro-cvv" className={labelClass}>
+                    CVV
+                  </label>{' '}
+                  <input
+                    id="registro-cvv"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="cc-csc"
+                    required
+                    maxLength={4}
+                    placeholder="123"
+                    onInput={(e) => {
+                      const el = e.currentTarget
+                      el.value = el.value.replace(/\D/g, '')
+                      el.setCustomValidity(
+                        isValidCvv(el.value) ? '' : 'CVV no válido',
+                      )
+                    }}
+                    className={inputClass}
+                  />
+                  <p className={errorClass}>Entre 3 y 4 dígitos.</p>
+                </div>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                Pago simulado: no se cobra nada y la tarjeta no se guarda.
+              </p>
+            </fieldset>
+          )}
           <p role="alert" className={formErrorClass}>
             {error}
           </p>
           <button type="submit" className={submitClass}>
-            Crear cuenta
+            {paid
+              ? `Crear cuenta · ${formatPrice(plan.pricePerMonth)} €/mes`
+              : 'Crear cuenta'}
           </button>
           <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
             ¿Ya tienes cuenta?{' '}
