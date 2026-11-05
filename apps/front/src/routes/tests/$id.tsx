@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-router'
 
 import { SparklesIcon } from '#/components/icons'
+import { APP_NAME } from '#/env.constants'
 import { SiteFooter } from '#/components/layout/SiteFooter'
 import { SiteHeader } from '#/components/layout/SiteHeader'
 import { UserMenu } from '#/components/layout/UserMenu'
@@ -22,7 +23,7 @@ export const Route = createFileRoute('/tests/$id')({
     if (!readUser()) throw redirect({ to: '/studia/' })
   },
   head: () => ({
-    meta: [{ title: 'Realizar test · Studia' }],
+    meta: [{ title: `Realizar test · ${APP_NAME}` }],
   }),
   component: TestPage,
 })

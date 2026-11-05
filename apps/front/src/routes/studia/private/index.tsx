@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { subjectSchema } from '@tfm/types'
 
 import { TestsPanel } from '#/components/home/TestsPanel'
+import { APP_NAME } from '#/env.constants'
 import { useUser } from '#/lib/session-storage'
 
 // Filtros del panel en la URL: un enlace compartido o recargar la página los conserva.
@@ -15,7 +16,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute('/studia/private/')({
   validateSearch: searchSchema,
   head: () => ({
-    meta: [{ title: 'Tus tests · Studia' }],
+    meta: [{ title: `Tus tests · ${APP_NAME}` }],
   }),
   component: PrivateHome,
 })

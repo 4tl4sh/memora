@@ -18,13 +18,14 @@ import {
   primaryButtonClass,
   secondaryButtonClass,
 } from '#/components/ui/buttons'
+import { APP_NAME } from '#/env.constants'
 import { clearUser, setUser, useUser } from '#/lib/session-storage'
 import type { StoredUser } from '#/lib/users-storage'
 
 export const Route = createFileRoute('/studia/')({
   head: () => ({
     meta: [
-      { title: 'Studia · Convierte tu temario en tests' },
+      { title: `${APP_NAME} · Convierte tu temario en tests` },
       {
         name: 'description',
         content:
