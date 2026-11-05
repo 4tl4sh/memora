@@ -196,3 +196,5 @@ export const countTestsByStatus = (tests: Test[]): TestsByStatus =>
     (counts, test) => ({ ...counts, [test.status]: counts[test.status] + 1 }),
     { public: 0, private: 0 }
   );
+
+export * from "./schemas";

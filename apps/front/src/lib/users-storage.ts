@@ -1,3 +1,5 @@
+import { z } from 'zod'
+import { userSchema } from '@tfm/types'
 import type { User } from '@tfm/types'
 
 // Usuarios registrados: de momento viven solo en localStorage, sin servidor.
@@ -7,6 +9,11 @@ export const USERS_KEY = 'studia_users'
 
 // sessionToken: token aleatorio de la sesión abierta (ver session-storage.ts)
 export type StoredUser = User & { password: string; sessionToken?: string }
+
+const storedUserSchema = userSchema.extend({
+  password: z.string(),
+  sessionToken: z.string().optional(),
+})
 
 export interface Registration {
   name: string
@@ -24,6 +31,22 @@ const EMPTY: StoredUser[] = []
 let cachedRaw: string | null = null
 let cachedUsers: StoredUser[] = EMPTY
 
+// Se valida con Zod lo que hay en localStorage: los usuarios mal formados se descartan
+export const parseUsers = (raw: string | null): StoredUser[] => {
+  if (!raw) return EMPTY
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return EMPTY
+  }
+  if (!Array.isArray(parsed)) return EMPTY
+  return parsed.flatMap((item) => {
+    const result = storedUserSchema.safeParse(item)
+    return result.success ? [result.data] : []
+  })
+}
+
 export const readUsers = (): StoredUser[] => {
   let raw: string | null = null
   try {
@@ -31,12 +54,7 @@ export const readUsers = (): StoredUser[] => {
   } catch {}
   if (raw === cachedRaw) return cachedUsers
   cachedRaw = raw
-  try {
-    const parsed: unknown = raw ? JSON.parse(raw) : EMPTY
-    cachedUsers = Array.isArray(parsed) ? (parsed as StoredUser[]) : EMPTY
-  } catch {
-    cachedUsers = EMPTY
-  }
+  cachedUsers = parseUsers(raw)
   return cachedUsers
 }
 

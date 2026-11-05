@@ -1,4 +1,5 @@
 import { useMemo, useSyncExternalStore } from 'react'
+import { testSchema } from '@tfm/types'
 import type { NewTest, Test } from '@tfm/types'
 
 // Tests de los usuarios: de momento viven solo en localStorage, sin servidor.
@@ -13,6 +14,23 @@ const EMPTY: Test[] = []
 let cachedRaw: string | null = null
 let cachedTests: Test[] = EMPTY
 
+// localStorage lo puede editar cualquiera: se valida con Zod en vez de fiarse con un `as`.
+// Los tests mal formados se descartan y el resto se conserva.
+export const parseTests = (raw: string | null): Test[] => {
+  if (!raw) return EMPTY
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return EMPTY
+  }
+  if (!Array.isArray(parsed)) return EMPTY
+  return parsed.flatMap((item) => {
+    const result = testSchema.safeParse(item)
+    return result.success ? [result.data] : []
+  })
+}
+
 export const readTests = (): Test[] => {
   let raw: string | null = null
   try {
@@ -20,12 +38,7 @@ export const readTests = (): Test[] => {
   } catch {}
   if (raw === cachedRaw) return cachedTests
   cachedRaw = raw
-  try {
-    const parsed: unknown = raw ? JSON.parse(raw) : EMPTY
-    cachedTests = Array.isArray(parsed) ? (parsed as Test[]) : EMPTY
-  } catch {
-    cachedTests = EMPTY
-  }
+  cachedTests = parseTests(raw)
   return cachedTests
 }
 

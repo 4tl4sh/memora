@@ -1,28 +1,14 @@
 import { createServerFn } from '@tanstack/react-start'
+import { z } from 'zod'
 import type { Question, Subject } from '@tfm/types'
 
 import { SUBJECT_LABELS } from '#/components/landing/data'
-import { MAX_PDF_BYTES, isPdf } from '#/lib/pdf'
+import { generateTestInputSchema } from '#/lib/schemas'
+import type { AiModel, TestQuestionType } from '#/lib/schemas'
 import { extractPdfText } from '#/server/pdf-to-text'
 
 // Tipo de una pregunta concreta
 export type QuestionType = Question['type']
-
-// Lo que elige el usuario: todas simples, todas múltiples, todas de verdadero o
-// falso, o mezcla de los tres tipos
-export type TestQuestionType = QuestionType | 'mixed'
-
-export const QUESTION_COUNTS = [5, 10, 15] as const
-
-// Proveedor de IA que elige el usuario: el prompt y la respuesta son los mismos
-export type AiModel = 'gemini' | 'groq'
-
-export const AI_MODELS: { value: AiModel; label: string }[] = [
-  { value: 'gemini', label: 'Gemini Flash' },
-  { value: 'groq', label: 'Groq' },
-]
-
-const QUESTION_TYPES: TestQuestionType[] = ['single', 'multiple', 'true-false', 'mixed']
 
 const OPTIONS_PER_QUESTION = 4
 
@@ -88,11 +74,30 @@ const GROQ_SCHEMA = {
   },
 }
 
-interface AiQuestion {
-  statement?: unknown
-  options?: unknown
-  correctIndexes?: unknown
-  explanation?: unknown
+// Lo que devuelve la IA, validado con Zod: puede equivocarse o devolver algo a medias
+const aiQuestionSchema = z.object({
+  statement: z.string(),
+  options: z.array(z.string()),
+  correctIndexes: z.array(z.number().int()),
+  explanation: z.string().optional(),
+})
+
+const aiResponseSchema = z.object({
+  title: z.string().optional().catch(undefined),
+  // Cada pregunta se valida por separado (toQuestions): una mal formada no tira el test
+  questions: z.array(z.unknown()).catch([]),
+})
+
+// Del texto de la IA a un objeto validado; si no es JSON o no encaja, vacío
+export const parseAiResponse = (raw: string | undefined) => {
+  let json: unknown
+  try {
+    json = raw ? JSON.parse(raw) : {}
+  } catch {
+    json = {}
+  }
+  const result = aiResponseSchema.safeParse(json)
+  return result.success ? result.data : { title: undefined, questions: [] }
 }
 
 const SINGLE_ANSWER = 'exactamente 1 opción correcta'
@@ -142,7 +147,7 @@ const buildPrompt = (count: number, type: TestQuestionType, subject: Subject) =>
 
 // Tipo de cada pregunta según sus opciones y respuestas correctas; null si no
 // encaja con lo que eligió el usuario
-const resolveType = (
+export const resolveType = (
   type: TestQuestionType,
   options: number,
   correct: number,
@@ -164,19 +169,17 @@ const trueFalseValue = (option: string): boolean | null => {
 }
 
 // La IA puede equivocarse: se descartan las preguntas mal formadas
-const toQuestions = (raw: unknown, type: TestQuestionType): Question[] => {
-  if (!Array.isArray(raw)) return []
+export const toQuestions = (raw: unknown[], type: TestQuestionType): Question[] => {
   const questions: Question[] = []
-  for (const q of raw as AiQuestion[]) {
-    const statement = typeof q.statement === 'string' ? q.statement.trim() : ''
-    const options = Array.isArray(q.options)
-      ? q.options.filter((o): o is string => typeof o === 'string').map((o) => o.trim())
-      : []
-    const indexes = Array.isArray(q.correctIndexes)
-      ? [...new Set(q.correctIndexes)].filter(
-          (i): i is number => Number.isInteger(i) && i >= 0 && i < options.length,
-        )
-      : []
+  for (const item of raw) {
+    const parsed = aiQuestionSchema.safeParse(item)
+    if (!parsed.success) continue
+    const q = parsed.data
+    const statement = q.statement.trim()
+    const options = q.options.map((o) => o.trim())
+    const indexes = [...new Set(q.correctIndexes)].filter(
+      (i) => i >= 0 && i < options.length,
+    )
     if (!statement || options.some((o) => !o)) continue
     const questionType = resolveType(type, options.length, indexes.length)
     if (!questionType) continue
@@ -184,7 +187,7 @@ const toQuestions = (raw: unknown, type: TestQuestionType): Question[] => {
     const base = {
       id: questions.length + 1,
       statement,
-      ...(typeof q.explanation === 'string' && q.explanation.trim()
+      ...(q.explanation?.trim()
         ? { explanation: q.explanation.trim() }
         : {}),
     }
@@ -294,31 +297,11 @@ const callGroq = async (apiKey: string, system: string, text: string) => {
 export const generateTest = createServerFn({ method: 'POST' })
   .validator((data: FormData) => {
     if (!(data instanceof FormData)) throw new Error('Formato de petición no válido')
-    const file = data.get('file')
-    if (!(file instanceof File)) throw new Error('Falta el fichero')
-    if (!isPdf(file)) throw new Error('El fichero debe ser un PDF')
-    if (file.size > MAX_PDF_BYTES) throw new Error('El PDF no puede superar 5 MB')
-
-    const count = Number(data.get('count'))
-    if (!QUESTION_COUNTS.some((n) => n === count))
-      throw new Error('Número de preguntas no válido')
-    const type = data.get('type')
-    if (!QUESTION_TYPES.some((t) => t === type))
-      throw new Error('Tipo de preguntas no válido')
-    const subject = data.get('subject')
-    if (typeof subject !== 'string' || !(subject in SUBJECT_LABELS))
-      throw new Error('Materia no válida')
-    const model = data.get('model')
-    if (!AI_MODELS.some((m) => m.value === model))
-      throw new Error('Modelo no válido')
-
-    return {
-      file,
-      count,
-      type: type as TestQuestionType,
-      subject: subject as Subject,
-      model: model as AiModel,
-    }
+    // Las mismas reglas que el formulario (lib/schemas.ts): no hay que fiarse del navegador
+    const result = generateTestInputSchema.safeParse(Object.fromEntries(data))
+    if (!result.success)
+      throw new Error(result.error.issues[0]?.message ?? 'Petición no válida')
+    return result.data
   })
   .handler(async ({ data: { file, count, type, subject, model: provider } }) => {
     const keyName = API_KEYS[provider]
@@ -344,15 +327,11 @@ export const generateTest = createServerFn({ method: 'POST' })
       throw new Error(aiErrorMessage(err, keyName))
     }
 
-    let parsed: { title?: unknown; questions?: unknown } = {}
-    try {
-      parsed = raw ? JSON.parse(raw) : {}
-    } catch {}
+    const parsed = parseAiResponse(raw)
     const questions = toQuestions(parsed.questions, type).slice(0, count)
     if (questions.length === 0)
       throw new Error('La IA no ha devuelto preguntas válidas. Inténtalo de nuevo.')
 
-    const title =
-      typeof parsed.title === 'string' ? parsed.title.trim().slice(0, 80) : ''
+    const title = parsed.title?.trim().slice(0, 80) ?? ''
     return { title, pages, questions }
   })

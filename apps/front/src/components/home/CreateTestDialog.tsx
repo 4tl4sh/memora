@@ -13,12 +13,9 @@ import { SUBJECT_LABELS } from '#/components/landing/data'
 import { iconButtonClass, primaryButtonClass } from '#/components/ui/buttons'
 import { useUser } from '#/lib/session-storage'
 import { addTest } from '#/lib/tests-storage'
-import {
-  AI_MODELS,
-  QUESTION_COUNTS,
-  generateTest,
-} from '#/server/generate-test'
-import type { AiModel, TestQuestionType } from '#/server/generate-test'
+import { AI_MODELS, QUESTION_COUNTS } from '#/lib/schemas'
+import type { AiModel, TestQuestionType } from '#/lib/schemas'
+import { generateTest } from '#/server/generate-test'
 
 interface CreateTestDialogProps {
   open: boolean
