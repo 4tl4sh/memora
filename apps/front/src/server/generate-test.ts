@@ -5,7 +5,9 @@ import type { Question, Subject } from '@tfm/types'
 import { SUBJECT_LABELS } from '#/components/landing/data'
 import { generateTestInputSchema } from '#/lib/schemas'
 import type { AiModel, TestQuestionType } from '#/lib/schemas'
+import { getRequest } from '@tanstack/react-start/server'
 import { extractPdfText } from '#/server/pdf-to-text'
+import { isAbortError, withRetry } from '#/server/retry'
 
 // Tipo de una pregunta concreta
 export type QuestionType = Question['type']
@@ -28,6 +30,9 @@ const DEFAULT_GEMINI_MODEL = 'gemini-flash-lite-latest'
 
 // gpt-oss-20b: de los más rápidos de Groq y admite JSON con esquema estricto
 const DEFAULT_GROQ_MODEL = 'openai/gpt-oss-20b'
+
+// Tiempo máximo de cada llamada a la IA: si no responde, se corta en vez de esperar sin fin
+const AI_TIMEOUT_MS = 60_000
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
@@ -237,7 +242,12 @@ class AiHttpError extends Error {
   }
 }
 
-const callGemini = async (apiKey: string, system: string, text: string) => {
+const callGemini = async (
+  apiKey: string,
+  system: string,
+  text: string,
+  signal: AbortSignal,
+) => {
   // Import dinámico: el SDK de Gemini solo hace falta en el servidor
   const { GoogleGenAI, ThinkingLevel } = await import('@google/genai')
   const ai = new GoogleGenAI({ apiKey })
@@ -253,18 +263,25 @@ const callGemini = async (apiKey: string, system: string, text: string) => {
       maxOutputTokens: MAX_OUTPUT_TOKENS,
       // Sin apenas razonamiento previo: es lo que más tiempo se llevaba
       thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+      abortSignal: signal,
     },
   })
   return { model, raw: response.text }
 }
 
 // Groq tiene una API compatible con OpenAI: basta con fetch, sin SDK
-const callGroq = async (apiKey: string, system: string, text: string) => {
+const callGroq = async (
+  apiKey: string,
+  system: string,
+  text: string,
+  signal: AbortSignal,
+) => {
   const model = process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL
   // Esquema estricto y razonamiento solo existen en los modelos gpt-oss
   const isGptOss = model.startsWith('openai/gpt-oss')
   const res = await fetch(GROQ_URL, {
     method: 'POST',
+    signal,
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
@@ -318,12 +335,27 @@ export const generateTest = createServerFn({ method: 'POST' })
     const call = provider === 'groq' ? callGroq : callGemini
     let raw: string | undefined
     start = Date.now()
+    // Si el usuario cancela, el navegador corta la petición y llega aquí como abort
+    const cancelled = getRequest().signal
     try {
-      const result = await call(apiKey, system, text)
+      // Cada intento tiene su propio tiempo máximo; se reintenta ante 429, 5xx o fallo de red
+      const result = await withRetry(
+        () =>
+          call(
+            apiKey,
+            system,
+            text,
+            AbortSignal.any([cancelled, AbortSignal.timeout(AI_TIMEOUT_MS)]),
+          ),
+        { signal: cancelled },
+      )
       raw = result.raw
       console.info(`${provider} (${result.model}): ${Date.now() - start} ms`)
     } catch (err) {
+      if (cancelled.aborted) throw new Error('Generación cancelada')
       console.error(`Error de ${provider}`, err)
+      if (isAbortError(err))
+        throw new Error('La IA ha tardado demasiado en responder. Inténtalo de nuevo.')
       throw new Error(aiErrorMessage(err, keyName))
     }
 

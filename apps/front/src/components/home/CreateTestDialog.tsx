@@ -61,6 +61,8 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
   const user = useUser()
   const [step, setStep] = useState<Step>('mode')
   const [error, setError] = useState<string | null>(null)
+  // Para cancelar la generación en curso con el botón Cancelar
+  const abortRef = useRef<AbortController | null>(null)
 
   // TanStack Form con el esquema de Zod (lib/schemas.ts). La server function vuelve
   // a validar con las mismas reglas: no se fía de lo que llega del navegador.
@@ -71,6 +73,8 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
       const { file, count, type, subject, model } = value
       if (!file || !count || !type || !model || !subject) return
       setError(null)
+      const controller = new AbortController()
+      abortRef.current = controller
       try {
         const formData = new FormData()
         formData.append('file', file)
@@ -81,6 +85,7 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
         // El servidor extrae el texto y se lo pasa a la IA: aquí solo llegan las preguntas
         const { title, pages, questions } = await generateTest({
           data: formData,
+          signal: controller.signal,
         })
         if (!user)
           throw new Error('Tu sesión ha caducado. Vuelve a iniciar sesión.')
@@ -96,11 +101,15 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
         )
         dialogRef.current?.close()
       } catch (err) {
+        // Una cancelación la ha pedido el usuario: no es un error que haya que enseñar
+        if (controller.signal.aborted) return
         setError(
           err instanceof Error && err.message
             ? err.message
             : 'No se pudo generar el test. Inténtalo de nuevo.',
         )
+      } finally {
+        abortRef.current = null
       }
     },
   })
@@ -127,8 +136,10 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
     setError(null)
   }
 
-  // Mientras se genera el test no se deja cerrar
+  // Mientras se genera el test no se deja cerrar (se puede cancelar)
   const close = () => !loading && onClose()
+
+  const cancel = () => abortRef.current?.abort()
 
   return (
     <dialog
@@ -340,11 +351,10 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
             <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
-                disabled={loading}
-                onClick={() => setStep('mode')}
-                className="text-sm font-semibold text-neutral-600 transition hover:text-marca-700 disabled:opacity-50 dark:text-neutral-300 dark:hover:text-marca-300"
+                onClick={loading ? cancel : () => setStep('mode')}
+                className="text-sm font-semibold text-neutral-600 transition hover:text-marca-700 dark:text-neutral-300 dark:hover:text-marca-300"
               >
-                Atrás
+                {loading ? 'Cancelar' : 'Atrás'}
               </button>
               <button
                 type="submit"
