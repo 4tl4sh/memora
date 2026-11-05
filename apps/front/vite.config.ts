@@ -25,6 +25,8 @@ const config = defineConfig(({ mode }) => {
         // pdf-parse se carga tal cual desde node_modules: empaquetado pierde los
         // polyfills de Node (DOMMatrix…) y falla al leer el PDF
         traceDeps: ['pdf-parse*'],
+        // Cabecera para que Google no indexe ninguna ruta (tampoco las estáticas)
+        routeRules: { '/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } } },
       }),
       tailwindcss(),
       tanstackStart(),
