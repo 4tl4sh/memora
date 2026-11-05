@@ -15,13 +15,13 @@ Aplicación web para estudiar con tests: subes tu temario en PDF y una IA te pro
 | Parte | Qué hace |
 | --- | --- |
 | **Landing** (`/studia/`) | Cabecera con selector de tema, modo oscuro y menú móvil. Hero, ejemplos de tests, cómo funciona, opiniones, planes con destacado, FAQ y pie con newsletter. Los datos, precios y opiniones son inventados |
-| **Acceso** | Login **simulado**: acepta cualquier usuario y contraseña, y guarda la sesión en el navegador. No hay cuentas reales |
+| **Registro y acceso** | Registro con nombre, correo y contraseña (mínimo 6 caracteres) y login con esas credenciales. Los usuarios y la sesión se guardan en el navegador: es una **simulación**, la contraseña se guarda en claro y no hay servidor. Cada usuario solo ve sus propios tests |
 | **Panel** (`/studia/private/`) | Lista de tus tests con filtro por materia, menú de acciones por test (realizar o borrar, con confirmación) y estado vacío si todavía no hay ninguno |
 | **Crear un test** | Con asistencia de IA: subes un PDF (hasta 5 MB), eliges 5, 10 o 15 preguntas, el tipo (simple, múltiple o mixta) y la materia. El modo manual está en la interfaz como «Próximamente» |
 | **Hacer un test** (`/tests/:id`) | Todas las preguntas en una página, con el progreso siempre a la vista y botón de finalizar. Al terminar se muestra el resultado con confeti |
 | **Preferencias** | Tres temas de color (Teal, Azul Klein y Amarillo) y modo oscuro, combinables |
 
-Los tests y la sesión se guardan en `localStorage`: por ahora **no hay base de datos conectada** y nada se comparte entre navegadores.
+Usuarios, sesión y tests se guardan en `localStorage`: por ahora **no hay base de datos conectada** y nada se comparte entre navegadores ni dispositivos.
 
 ### Cómo genera el test la IA
 
