@@ -15,6 +15,8 @@ interface SiteHeaderProps {
   // actions se ve en la barra a cualquier ancho; menuAction, al final del menú móvil
   actions?: ReactNode
   menuAction?: ReactNode
+  // Destino del botón "Empieza gratis" (por defecto, la sección de planes)
+  startHref?: string
 }
 
 export function SiteHeader({
@@ -22,6 +24,7 @@ export function SiteHeader({
   homeHref = '/',
   actions,
   menuAction,
+  startHref = '#planes',
 }: SiteHeaderProps) {
   const { darkMode, theme, setDarkMode, setTheme } = usePreferences()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -101,7 +104,7 @@ export function SiteHeader({
               <ThemeMenu />{' '}
               {!actions && (
                 <a
-                  href="#planes"
+                  href={startHref}
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-4 py-2 text-sm font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
                 >
                   Empieza gratis
@@ -195,7 +198,7 @@ export function SiteHeader({
               menuAction
             ) : (
               <a
-                href="#planes"
+                href={startHref}
                 onClick={closeMenu}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-marca-600 px-6 py-3 font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
               >

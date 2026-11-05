@@ -1,7 +1,8 @@
 import { SUBJECT_LABELS, exampleTests } from './data'
 import type { ExampleTest } from './data'
 
-export function Ejemplos() {
+// tryHref: adónde lleva el botón "Probar" de cada ejemplo
+export function Ejemplos({ tryHref = '#' }: { tryHref?: string }) {
   return (
     <section
       id="ejemplos"
@@ -27,7 +28,7 @@ export function Ejemplos() {
         <ul className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {exampleTests.map((test) => (
             <li key={test.id}>
-              <ExampleCard test={test} />
+              <ExampleCard test={test} tryHref={tryHref} />
             </li>
           ))}
         </ul>
@@ -36,7 +37,13 @@ export function Ejemplos() {
   )
 }
 
-function ExampleCard({ test }: { test: ExampleTest }) {
+function ExampleCard({
+  test,
+  tryHref,
+}: {
+  test: ExampleTest
+  tryHref: string
+}) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-0 shadow-sm transition duration-300 hover:shadow-xl motion-safe:hover:-translate-y-1 dark:border-neutral-700 dark:bg-neutral-800">
       <div className="overflow-hidden">
@@ -85,7 +92,7 @@ function ExampleCard({ test }: { test: ExampleTest }) {
             </div>
           </dl>
           <a
-            href="#"
+            href={tryHref}
             className="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-4 py-2 text-sm font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
           >
             Probar
