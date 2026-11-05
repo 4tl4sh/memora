@@ -21,6 +21,10 @@
     },
     "typecheck": {
       "dependsOn": ["^typecheck"]
+    },
+    "test:run": {
+      "dependsOn": ["^test:run"],
+      "outputs": ["coverage/**"]
     }
   }
 }

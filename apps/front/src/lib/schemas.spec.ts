@@ -1,0 +1,140 @@
+import {
+  createTestSchema,
+  generateTestInputSchema,
+  loginSchema,
+  registerSchema,
+} from './schemas'
+
+const messages = (result: { error?: { issues: { message: string }[] } }) =>
+  result.error?.issues.map((issue) => issue.message) ?? []
+
+const pdf = (size = 1000, name = 'tema.pdf', type = 'application/pdf') =>
+  new File([new Uint8Array(size)], name, { type })
+
+describe('loginSchema', () => {
+  it('debería pedir email y contraseña cuando están vacíos', () => {
+    const result = loginSchema.safeParse({ email: '', password: '' })
+
+    expect(messages(result)).toEqual([
+      'Escribe tu email.',
+      'Escribe tu contraseña.',
+    ])
+  })
+
+  it('debería rechazar un email mal escrito', () => {
+    const result = loginSchema.safeParse({ email: 'lucia@', password: 'x' })
+
+    expect(messages(result)).toEqual(['Escribe un email válido.'])
+  })
+})
+
+describe('registerSchema', () => {
+  it('debería rechazar un nombre con solo espacios', () => {
+    const result = registerSchema.safeParse({
+      name: '   ',
+      email: 'lucia@correo.com',
+      password: 'secreta',
+    })
+
+    expect(messages(result)).toEqual(['Escribe tu nombre.'])
+  })
+
+  it('debería exigir al menos 6 caracteres de contraseña', () => {
+    const result = registerSchema.safeParse({
+      name: 'Lucía',
+      email: 'lucia@correo.com',
+      password: '12345',
+    })
+
+    expect(messages(result)).toEqual([
+      'La contraseña debe tener al menos 6 caracteres.',
+    ])
+  })
+
+  it('debería quitar los espacios a los lados del nombre y del email', () => {
+    const result = registerSchema.parse({
+      name: '  Lucía ',
+      email: ' lucia@correo.com ',
+      password: 'secreta',
+    })
+
+    expect(result).toEqual({
+      name: 'Lucía',
+      email: 'lucia@correo.com',
+      password: 'secreta',
+    })
+  })
+})
+
+describe('createTestSchema', () => {
+  const complete = {
+    file: pdf(),
+    count: 10,
+    type: 'mixed' as const,
+    subject: 'historia' as const,
+    model: 'groq' as const,
+  }
+
+  it('debería aceptar el formulario completo', () => {
+    expect(createTestSchema.safeParse(complete).success).toBe(true)
+  })
+
+  it('debería explicar qué falta con el formulario vacío', () => {
+    const result = createTestSchema.safeParse({
+      file: null,
+      count: null,
+      type: null,
+      subject: '',
+      model: null,
+    })
+
+    expect(messages(result)).toEqual([
+      'Sube el PDF con tu temario.',
+      'Elige cuántas preguntas quieres.',
+      'Elige el tipo de preguntas.',
+      'Elige una materia.',
+      'Elige el modelo de IA.',
+    ])
+  })
+
+  it('debería rechazar un número de preguntas que no se ofrece', () => {
+    const result = createTestSchema.safeParse({ ...complete, count: 7 })
+
+    expect(messages(result)).toEqual(['Elige cuántas preguntas quieres.'])
+  })
+
+  it.each([
+    ['que no es un PDF', pdf(10, 'foto.png', 'image/png'), 'debe ser un PDF'],
+    ['de más de 5 MB', pdf(5 * 1024 * 1024 + 1), 'no puede superar 5 MB'],
+  ])('debería rechazar un fichero %s', (_, file, text) => {
+    const result = createTestSchema.safeParse({ ...complete, file })
+
+    expect(messages(result).join()).toContain(text)
+  })
+})
+
+describe('generateTestInputSchema', () => {
+  it('debería convertir el número de preguntas que llega como texto', () => {
+    const result = generateTestInputSchema.parse({
+      file: pdf(),
+      count: '15',
+      type: 'single',
+      subject: 'quimica',
+      model: 'gemini',
+    })
+
+    expect(result.count).toBe(15)
+  })
+
+  it('debería rechazar una materia que no existe aunque el navegador la envíe', () => {
+    const result = generateTestInputSchema.safeParse({
+      file: pdf(),
+      count: '5',
+      type: 'single',
+      subject: 'magia',
+      model: 'gemini',
+    })
+
+    expect(result.success).toBe(false)
+  })
+})

@@ -104,6 +104,7 @@ export function PdfDropzone({ file, disabled, onChange }: PdfDropzoneProps) {
           ref={inputRef}
           type="file"
           accept="application/pdf,.pdf"
+          aria-label="Temario en PDF"
           hidden
           onChange={(e) => {
             pick(e.target.files?.[0])
