@@ -29,6 +29,11 @@ export const Route = createRootRoute({
       {
         title: 'Studia',
       },
+      // Proyecto en desarrollo: que los buscadores no lo indexen
+      {
+        name: 'robots',
+        content: 'noindex, nofollow',
+      },
     ],
     links: [
       preloadFont(interFont),

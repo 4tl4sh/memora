@@ -107,6 +107,15 @@
   }
 }
 
+/* Tailwind v4 deja los botones con cursor por defecto: se recupera la manita */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+}
+
 /* Temas: solo se redefine la escala marca-*; va en base porque base gana a theme */
 @layer base {
   [data-theme="klein"] {
