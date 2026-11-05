@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { checkAnswer } from '@tfm/types'
+import { assertNever, checkAnswer } from '@tfm/types'
 import type { Answer, Question, Test } from '@tfm/types'
 
-import { CheckIcon, CloseIcon } from '#/components/icons'
+import { ArrowLeftIcon, CheckIcon, CloseIcon } from '#/components/icons'
 import { SUBJECT_LABELS } from '#/components/landing/data'
-import { ArrowLeftIcon } from '#/components/icons'
 import { primaryButtonClass, secondaryButtonClass } from '#/components/ui/buttons'
 import { cn } from '#/lib/utils'
 import { ResultDialog } from './ResultDialog'
@@ -110,6 +109,9 @@ export function TestRunner({ test }: { test: Test }) {
           right: question.correct === (index === 0),
           picked: given === (index === 0),
         }
+      default:
+        // Si mañana se añade un tipo de pregunta, TypeScript avisa aquí
+        return assertNever(question)
     }
   }
 

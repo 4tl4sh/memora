@@ -157,6 +157,12 @@ export type TestsByStatus = Record<TestStatus, number>;
 
 // ─── Funciones puras ────────────────────────────────────────────
 
+// Comprobación exhaustiva: en el default de un switch sobre una unión discriminada,
+// el valor solo puede ser never. Si se añade un tipo nuevo y no se contempla, TypeScript da error.
+export const assertNever = (value: never): never => {
+  throw new Error(`Caso no contemplado: ${JSON.stringify(value)}`);
+};
+
 // Corrige una respuesta según el tipo de pregunta. En cada case, TypeScript
 // sabe qué campos tiene la pregunta (correctIndex, correct…).
 export const checkAnswer = (question: Question, given: Answer["given"]): boolean => {
@@ -171,6 +177,8 @@ export const checkAnswer = (question: Question, given: Answer["given"]): boolean
       );
     case "true-false":
       return given === question.correct;
+    default:
+      return assertNever(question);
   }
 };
 
