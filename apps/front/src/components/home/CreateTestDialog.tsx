@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import type { FormEvent } from 'react'
-import type { Subject } from '@tfm/types'
+import { useForm, useStore } from '@tanstack/react-form'
+import { subjectSchema } from '@tfm/types'
 
 import { PdfDropzone } from '#/components/home/PdfDropzone'
 import {
@@ -13,8 +13,8 @@ import { SUBJECT_LABELS } from '#/components/landing/data'
 import { iconButtonClass, primaryButtonClass } from '#/components/ui/buttons'
 import { useUser } from '#/lib/session-storage'
 import { addTest } from '#/lib/tests-storage'
-import { AI_MODELS, QUESTION_COUNTS } from '#/lib/schemas'
-import type { AiModel, TestQuestionType } from '#/lib/schemas'
+import { AI_MODELS, QUESTION_COUNTS, createTestSchema } from '#/lib/schemas'
+import type { CreateTestValues, TestQuestionType } from '#/lib/schemas'
 import { generateTest } from '#/server/generate-test'
 
 interface CreateTestDialogProps {
@@ -31,7 +31,18 @@ const QUESTION_TYPES: { value: TestQuestionType; label: string }[] = [
   { value: 'mixed', label: 'Mixta' },
 ]
 
-const SUBJECTS = Object.entries(SUBJECT_LABELS) as [Subject, string][]
+// Las materias salen del esquema: sin `as`, el tipo de cada valor ya es Subject
+const SUBJECTS = subjectSchema.options.map(
+  (value) => [value, SUBJECT_LABELS[value]] as const,
+)
+
+const defaultValues: CreateTestValues = {
+  file: null,
+  count: null,
+  type: null,
+  subject: '',
+  model: null,
+}
 
 const modeCardClass =
   'flex w-full items-start gap-4 rounded-2xl border border-neutral-200 p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700'
@@ -49,13 +60,59 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
   // Cada test se asigna al usuario que lo crea
   const user = useUser()
   const [step, setStep] = useState<Step>('mode')
-  const [file, setFile] = useState<File | null>(null)
-  const [count, setCount] = useState<number | null>(null)
-  const [type, setType] = useState<TestQuestionType | null>(null)
-  const [subject, setSubject] = useState<Subject | ''>('')
-  const [model, setModel] = useState<AiModel | null>(null)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // TanStack Form con el esquema de Zod (lib/schemas.ts). La server function vuelve
+  // a validar con las mismas reglas: no se fía de lo que llega del navegador.
+  const form = useForm({
+    defaultValues,
+    validators: { onChange: createTestSchema, onSubmit: createTestSchema },
+    onSubmit: async ({ value }) => {
+      const { file, count, type, subject, model } = value
+      if (!file || !count || !type || !model || !subject) return
+      setError(null)
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('count', String(count))
+        formData.append('type', type)
+        formData.append('subject', subject)
+        formData.append('model', model)
+        // El servidor extrae el texto y se lo pasa a la IA: aquí solo llegan las preguntas
+        const { title, pages, questions } = await generateTest({
+          data: formData,
+        })
+        if (!user)
+          throw new Error('Tu sesión ha caducado. Vuelve a iniciar sesión.')
+        addTest(
+          {
+            title: title || file.name.replace(/\.pdf$/i, ''),
+            subject,
+            status: 'private',
+            source: { kind: 'pdf', fileName: file.name, pages },
+            questions,
+          },
+          user.id,
+        )
+        dialogRef.current?.close()
+      } catch (err) {
+        setError(
+          err instanceof Error && err.message
+            ? err.message
+            : 'No se pudo generar el test. Inténtalo de nuevo.',
+        )
+      }
+    },
+  })
+
+  // Mientras se envía, el formulario y el diálogo quedan bloqueados
+  const loading = useStore(form.store, (state) => state.isSubmitting)
+  // El botón Crear se activa cuando el esquema da por buenos todos los campos
+  const canCreate = useStore(
+    form.store,
+    (state) => createTestSchema.safeParse(state.values).success,
+  )
+  const file = useStore(form.store, (state) => state.values.file)
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -66,56 +123,12 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
 
   const reset = () => {
     setStep('mode')
-    setFile(null)
-    setCount(null)
-    setType(null)
-    setSubject('')
-    setModel(null)
-    setLoading(false)
+    form.reset()
     setError(null)
   }
 
   // Mientras se genera el test no se deja cerrar
   const close = () => !loading && onClose()
-
-  const canCreate = Boolean(file && count && type && model && subject)
-
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!file || !count || !type || !model || !subject || loading) return
-    setLoading(true)
-    setError(null)
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('count', String(count))
-      formData.append('type', type)
-      formData.append('subject', subject)
-      formData.append('model', model)
-      // El servidor extrae el texto y se lo pasa a la IA: aquí solo llegan las preguntas
-      const { title, pages, questions } = await generateTest({ data: formData })
-      if (!user)
-        throw new Error('Tu sesión ha caducado. Vuelve a iniciar sesión.')
-      addTest(
-        {
-          title: title || file.name.replace(/\.pdf$/i, ''),
-          subject,
-          status: 'private',
-          source: { kind: 'pdf', fileName: file.name, pages },
-          questions,
-        },
-        user.id,
-      )
-      dialogRef.current?.close()
-    } catch (err) {
-      setError(
-        err instanceof Error && err.message
-          ? err.message
-          : 'No se pudo generar el test. Inténtalo de nuevo.',
-      )
-      setLoading(false)
-    }
-  }
 
   return (
     <dialog
@@ -193,89 +206,125 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
             </button>
           </div>
         ) : (
-          <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-5">
-            <PdfDropzone file={file} disabled={loading} onChange={setFile} />
+          <form
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault()
+              form.handleSubmit()
+            }}
+            className="mt-6 flex flex-col gap-5"
+          >
+            <form.Field name="file">
+              {(field) => (
+                <PdfDropzone
+                  file={field.state.value}
+                  disabled={loading}
+                  onChange={field.handleChange}
+                />
+              )}
+            </form.Field>
 
             {file && (
               <>
-                <fieldset disabled={loading}>
-                  <legend className={legendClass}>Número de preguntas</legend>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {QUESTION_COUNTS.map((n) => (
-                      <label key={n} className={radioClass}>
-                        <input
-                          type="radio"
-                          name="count"
-                          value={n}
-                          checked={count === n}
-                          onChange={() => setCount(n)}
-                          className="sr-only"
-                        />
-                        {n}
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
+                <form.Field name="count">
+                  {(field) => (
+                    <fieldset disabled={loading}>
+                      <legend className={legendClass}>Número de preguntas</legend>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {QUESTION_COUNTS.map((n) => (
+                          <label key={n} className={radioClass}>
+                            <input
+                              type="radio"
+                              name={field.name}
+                              value={n}
+                              checked={field.state.value === n}
+                              onChange={() => field.handleChange(n)}
+                              className="sr-only"
+                            />
+                            {n}
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
+                </form.Field>
 
-                <fieldset disabled={loading}>
-                  <legend className={legendClass}>Tipo de preguntas</legend>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {QUESTION_TYPES.map((option) => (
-                      <label key={option.value} className={radioClass}>
-                        <input
-                          type="radio"
-                          name="type"
-                          value={option.value}
-                          checked={type === option.value}
-                          onChange={() => setType(option.value)}
-                          className="sr-only"
-                        />
-                        {option.label}
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
+                <form.Field name="type">
+                  {(field) => (
+                    <fieldset disabled={loading}>
+                      <legend className={legendClass}>Tipo de preguntas</legend>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {QUESTION_TYPES.map((option) => (
+                          <label key={option.value} className={radioClass}>
+                            <input
+                              type="radio"
+                              name={field.name}
+                              value={option.value}
+                              checked={field.state.value === option.value}
+                              onChange={() => field.handleChange(option.value)}
+                              className="sr-only"
+                            />
+                            {option.label}
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
+                </form.Field>
 
-                <fieldset disabled={loading}>
-                  <legend className={legendClass}>Modelo</legend>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {AI_MODELS.map((option) => (
-                      <label key={option.value} className={radioClass}>
-                        <input
-                          type="radio"
-                          name="model"
-                          value={option.value}
-                          checked={model === option.value}
-                          onChange={() => setModel(option.value)}
-                          className="sr-only"
-                        />
-                        {option.label}
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
+                <form.Field name="model">
+                  {(field) => (
+                    <fieldset disabled={loading}>
+                      <legend className={legendClass}>Modelo</legend>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {AI_MODELS.map((option) => (
+                          <label key={option.value} className={radioClass}>
+                            <input
+                              type="radio"
+                              name={field.name}
+                              value={option.value}
+                              checked={field.state.value === option.value}
+                              onChange={() => field.handleChange(option.value)}
+                              className="sr-only"
+                            />
+                            {option.label}
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  )}
+                </form.Field>
 
-                <div>
-                  <label htmlFor="crear-materia" className={legendClass}>
-                    Materia
-                  </label>
-                  <select
-                    id="crear-materia"
-                    value={subject}
-                    disabled={loading}
-                    onChange={(e) => setSubject(e.target.value as Subject)}
-                    className="mt-1.5 block w-full rounded-xl border border-neutral-300 bg-neutral-0 px-4 py-2.5 text-neutral-950 focus:border-marca-500 focus:ring-2 focus:ring-marca-500/30 focus:outline-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-0"
-                  >
-                    <option value="" disabled>
-                      Elige una materia
-                    </option>
-                    {SUBJECTS.map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <form.Field name="subject">
+                  {(field) => (
+                    <div>
+                      <label htmlFor="crear-materia" className={legendClass}>
+                        Materia
+                      </label>
+                      <select
+                        id="crear-materia"
+                        name={field.name}
+                        value={field.state.value}
+                        disabled={loading}
+                        onChange={(e) => {
+                          // El valor del <select> es texto: se valida en vez de usar `as`
+                          const parsed = subjectSchema.safeParse(e.target.value)
+                          if (parsed.success) field.handleChange(parsed.data)
+                        }}
+                        className="mt-1.5 block w-full rounded-xl border border-neutral-300 bg-neutral-0 px-4 py-2.5 text-neutral-950 focus:border-marca-500 focus:ring-2 focus:ring-marca-500/30 focus:outline-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-0"
+                      >
+                        <option value="" disabled>
+                          Elige una materia
+                        </option>
+                        {SUBJECTS.map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </form.Field>
               </>
             )}
 

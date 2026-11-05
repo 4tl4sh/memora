@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import type { FormEvent } from 'react'
+import { useForm } from '@tanstack/react-form'
 
+import { TextField } from '#/components/auth/TextField'
 import {
-  errorClass,
   formErrorClass,
-  inputClass,
-  labelClass,
   linkButtonClass,
   submitClass,
 } from '#/components/auth/form-classes'
 import { CloseIcon } from '#/components/icons'
+import { focusFirstInvalid } from '#/lib/forms'
+import { loginSchema } from '#/lib/schemas'
+import type { LoginValues } from '#/lib/schemas'
 import { authenticate } from '#/lib/users-storage'
 import type { StoredUser } from '#/lib/users-storage'
 
@@ -39,27 +40,25 @@ export function LoginDialog({
     if (!open && dialog.open) dialog.close()
   }, [open])
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const form = e.currentTarget
-    if (!form.checkValidity()) {
-      form.querySelector<HTMLInputElement>(':invalid')?.focus()
-      return
-    }
-    const data = new FormData(form)
-    const user = authenticate(
-      data.get('email') as string,
-      data.get('password') as string,
-    )
-    if (!user) {
-      setError('Email o contraseña incorrectos.')
-      return
-    }
-    // Se cierra ya, antes de que el padre pinte el menú de usuario: mientras el modal
-    // está abierto el resto de la página es inerte y no podría recibir el foco
-    dialogRef.current?.close()
-    onLogin(user)
-  }
+  const defaultValues: LoginValues = { email: '', password: '' }
+
+  // TanStack Form con el esquema de Zod: valida al escribir y al enviar
+  const form = useForm({
+    defaultValues,
+    validators: { onChange: loginSchema, onSubmit: loginSchema },
+    onSubmitInvalid: () => focusFirstInvalid(formRef.current),
+    onSubmit: ({ value }) => {
+      const user = authenticate(value.email, value.password)
+      if (!user) {
+        setError('Email o contraseña incorrectos.')
+        return
+      }
+      // Se cierra ya, antes de que el padre pinte el menú de usuario: mientras el modal
+      // está abierto el resto de la página es inerte y no podría recibir el foco
+      dialogRef.current?.close()
+      onLogin(user)
+    },
+  })
 
   return (
     <dialog
@@ -67,7 +66,7 @@ export function LoginDialog({
       aria-labelledby="titulo-login"
       // Escape y close() disparan "close": se limpia el formulario y se avisa al padre
       onClose={() => {
-        formRef.current?.reset()
+        form.reset()
         setError(null)
         onClose()
       }}
@@ -100,40 +99,37 @@ export function LoginDialog({
         <form
           ref={formRef}
           noValidate
-          onSubmit={onSubmit}
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.handleSubmit()
+          }}
           // Al corregir los datos desaparece el aviso de credenciales incorrectas
           onInput={() => setError(null)}
           className="mt-6 flex flex-col gap-4"
         >
-          <div>
-            <label htmlFor="login-email" className={labelClass}>
-              Email
-            </label>{' '}
-            <input
-              id="login-email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              placeholder="lucia@correo.com"
-              className={inputClass}
-            />
-            <p className={errorClass}>Escribe un email válido.</p>
-          </div>
-          <div>
-            <label htmlFor="login-password" className={labelClass}>
-              Contraseña
-            </label>{' '}
-            <input
-              id="login-password"
-              name="password"
-              type="password"
-              required
-              autoComplete="current-password"
-              className={inputClass}
-            />
-            <p className={errorClass}>Escribe tu contraseña.</p>
-          </div>
+          <form.Field name="email">
+            {(field) => (
+              <TextField
+                field={field}
+                id="login-email"
+                label="Email"
+                type="email"
+                autoComplete="email"
+                placeholder="lucia@correo.com"
+              />
+            )}
+          </form.Field>
+          <form.Field name="password">
+            {(field) => (
+              <TextField
+                field={field}
+                id="login-password"
+                label="Contraseña"
+                type="password"
+                autoComplete="current-password"
+              />
+            )}
+          </form.Field>
           <p role="alert" className={formErrorClass}>
             {error}
           </p>

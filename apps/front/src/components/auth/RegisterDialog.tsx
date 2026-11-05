@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import type { FormEvent } from 'react'
+import { useForm } from '@tanstack/react-form'
 
+import { TextField } from '#/components/auth/TextField'
 import {
-  errorClass,
   formErrorClass,
-  inputClass,
-  labelClass,
   linkButtonClass,
   submitClass,
 } from '#/components/auth/form-classes'
 import { CloseIcon } from '#/components/icons'
+import { focusFirstInvalid } from '#/lib/forms'
+import { MIN_PASSWORD, registerSchema } from '#/lib/schemas'
+import type { RegisterValues } from '#/lib/schemas'
 import { registerUser } from '#/lib/users-storage'
 import type { StoredUser } from '#/lib/users-storage'
 
@@ -19,8 +20,6 @@ interface RegisterDialogProps {
   onRegister: (user: StoredUser) => void
   onSwitchToLogin: () => void
 }
-
-const MIN_PASSWORD = 6
 
 // Registro: crea el usuario en localStorage (studia_users) y entra directamente.
 // Mismo <dialog> nativo que LoginDialog.
@@ -41,35 +40,35 @@ export function RegisterDialog({
     if (!open && dialog.open) dialog.close()
   }, [open])
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const form = e.currentTarget
-    if (!form.checkValidity()) {
-      form.querySelector<HTMLInputElement>(':invalid')?.focus()
-      return
-    }
-    const data = new FormData(form)
-    const result = registerUser({
-      name: data.get('nombre') as string,
-      email: data.get('email') as string,
-      password: data.get('password') as string,
-    })
-    if (!result.ok) {
-      setError('Ya existe una cuenta con ese email.')
-      form.querySelector<HTMLInputElement>('[name="email"]')?.focus()
-      return
-    }
-    // Igual que en el login: se cierra antes de que el padre cambie la página
-    dialogRef.current?.close()
-    onRegister(result.user)
-  }
+  const defaultValues: RegisterValues = { name: '', email: '', password: '' }
+
+  // TanStack Form con el esquema de Zod: valida al escribir y al enviar
+  const form = useForm({
+    defaultValues,
+    validators: { onChange: registerSchema, onSubmit: registerSchema },
+    onSubmitInvalid: () => focusFirstInvalid(formRef.current),
+    onSubmit: ({ value }) => {
+      // parse aplica las transformaciones del esquema (trim del nombre y del email)
+      const result = registerUser(registerSchema.parse(value))
+      if (!result.ok) {
+        setError('Ya existe una cuenta con ese email.')
+        formRef.current
+          ?.querySelector<HTMLInputElement>('[name="email"]')
+          ?.focus()
+        return
+      }
+      // Igual que en el login: se cierra antes de que el padre cambie la página
+      dialogRef.current?.close()
+      onRegister(result.user)
+    },
+  })
 
   return (
     <dialog
       ref={dialogRef}
       aria-labelledby="titulo-registro"
       onClose={() => {
-        formRef.current?.reset()
+        form.reset()
         setError(null)
         onClose()
       }}
@@ -101,65 +100,48 @@ export function RegisterDialog({
         <form
           ref={formRef}
           noValidate
-          onSubmit={onSubmit}
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.handleSubmit()
+          }}
           onInput={() => setError(null)}
           className="mt-6 flex flex-col gap-4"
         >
-          <div>
-            <label htmlFor="registro-nombre" className={labelClass}>
-              Nombre
-            </label>{' '}
-            <input
-              id="registro-nombre"
-              name="nombre"
-              type="text"
-              required
-              pattern=".*\S.*"
-              autoComplete="name"
-              placeholder="Lucía"
-              className={inputClass}
-            />
-            <p className={errorClass}>Escribe tu nombre.</p>
-          </div>
-          <div>
-            <label htmlFor="registro-email" className={labelClass}>
-              Email
-            </label>{' '}
-            <input
-              id="registro-email"
-              name="email"
-              type="email"
-              required
-              autoComplete="email"
-              placeholder="lucia@correo.com"
-              className={inputClass}
-            />
-            <p className={errorClass}>Escribe un email válido.</p>
-          </div>
-          <div>
-            <label htmlFor="registro-password" className={labelClass}>
-              Contraseña
-            </label>{' '}
-            <input
-              id="registro-password"
-              name="password"
-              type="password"
-              required
-              minLength={MIN_PASSWORD}
-              autoComplete="new-password"
-              aria-describedby="registro-password-ayuda"
-              className={inputClass}
-            />
-            <p className={errorClass}>
-              La contraseña debe tener al menos {MIN_PASSWORD} caracteres.
-            </p>
-            <p
-              id="registro-password-ayuda"
-              className="mt-1.5 text-xs text-neutral-500 peer-user-invalid:hidden dark:text-neutral-400"
-            >
-              Mínimo {MIN_PASSWORD} caracteres.
-            </p>
-          </div>
+          <form.Field name="name">
+            {(field) => (
+              <TextField
+                field={field}
+                id="registro-nombre"
+                label="Nombre"
+                autoComplete="name"
+                placeholder="Lucía"
+              />
+            )}
+          </form.Field>
+          <form.Field name="email">
+            {(field) => (
+              <TextField
+                field={field}
+                id="registro-email"
+                label="Email"
+                type="email"
+                autoComplete="email"
+                placeholder="lucia@correo.com"
+              />
+            )}
+          </form.Field>
+          <form.Field name="password">
+            {(field) => (
+              <TextField
+                field={field}
+                id="registro-password"
+                label="Contraseña"
+                type="password"
+                autoComplete="new-password"
+                hint={`Mínimo ${MIN_PASSWORD} caracteres.`}
+              />
+            )}
+          </form.Field>
           <p role="alert" className={formErrorClass}>
             {error}
           </p>

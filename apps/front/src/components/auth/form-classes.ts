@@ -5,12 +5,12 @@ import { inputBaseClass } from '#/components/ui/inputs'
 export const labelClass =
   'text-sm font-semibold text-neutral-800 dark:text-neutral-100'
 
-// Los formularios marcan el campo inválido (user-invalid) y enlazan su mensaje de error (peer)
-export const inputClass = `${inputBaseClass} peer mt-1.5 px-4 user-invalid:border-fallo-500 user-invalid:ring-2 user-invalid:ring-fallo-500/20`
+// TanStack Form valida con Zod y marca el campo con aria-invalid: el estilo sale de ahí
+export const inputClass = `${inputBaseClass} mt-1.5 px-4 aria-invalid:border-fallo-500 aria-invalid:ring-2 aria-invalid:ring-fallo-500/20`
 
-// Error de un campo: solo se ve cuando el campo anterior (peer) es inválido
+// Error de un campo: solo se pinta cuando el campo tiene errores
 export const errorClass =
-  'mt-1.5 hidden text-sm font-medium text-fallo-700 peer-user-invalid:block dark:text-fallo-300'
+  'mt-1.5 text-sm font-medium text-fallo-700 dark:text-fallo-300'
 
 // Error general del formulario (credenciales, email repetido…): vacío no ocupa sitio
 export const formErrorClass =

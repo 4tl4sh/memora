@@ -73,8 +73,24 @@ const questionCountSchema = z
 
 // En el formulario los campos empiezan vacíos (null o ''): el esquema da el mensaje
 export const createTestSchema = z.object({
-  file: pdfFileSchema,
-  count: questionCountSchema,
+  file: z
+    .instanceof(File)
+    .nullable()
+    .superRefine((file, ctx) => {
+      const result = pdfFileSchema.safeParse(file)
+      if (!result.success)
+        ctx.addIssue({
+          code: 'custom',
+          message: result.error.issues[0]?.message ?? 'PDF no válido.',
+        })
+    }),
+  count: z
+    .number()
+    .nullable()
+    .refine(
+      (n) => questionCountSchema.safeParse(n).success,
+      'Elige cuántas preguntas quieres.',
+    ),
   type: testQuestionTypeSchema.nullable().refine((v) => v !== null, {
     message: 'Elige el tipo de preguntas.',
   }),
@@ -94,3 +110,5 @@ export const generateTestInputSchema = z.object({
   subject: subjectSchema,
   model: aiModelSchema,
 })
+
+export type CreateTestValues = z.input<typeof createTestSchema>

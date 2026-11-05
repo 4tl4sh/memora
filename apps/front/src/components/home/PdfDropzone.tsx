@@ -3,7 +3,7 @@ import type { DragEvent } from 'react'
 
 import { CloseIcon, FileUpIcon } from '#/components/icons'
 import { iconButtonClass, secondaryButtonClass } from '#/components/ui/buttons'
-import { MAX_PDF_BYTES, isPdf } from '#/lib/pdf'
+import { pdfFileSchema } from '#/lib/schemas'
 
 interface PdfDropzoneProps {
   file: File | null
@@ -16,10 +16,10 @@ const formatSize = (bytes: number) =>
     ? `${Math.max(1, Math.round(bytes / 1024))} KB`
     : `${(bytes / 1024 / 1024).toFixed(1)} MB`
 
+// Las mismas reglas que el formulario y el servidor (lib/schemas.ts)
 const validate = (file: File) => {
-  if (!isPdf(file)) return 'El fichero tiene que ser un PDF.'
-  if (file.size > MAX_PDF_BYTES) return 'El PDF no puede pesar más de 5 MB.'
-  return null
+  const result = pdfFileSchema.safeParse(file)
+  return result.success ? null : (result.error.issues[0]?.message ?? null)
 }
 
 // Zona para subir el temario: con el botón o soltando el PDF encima
