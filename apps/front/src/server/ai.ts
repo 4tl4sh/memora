@@ -63,7 +63,7 @@ const RESPONSE_SCHEMA = {
 }
 
 // El modo estricto de Groq exige additionalProperties: false en cada objeto y que
-// todas las propiedades sean obligatorias: truth también (en las de opciones se ignora)
+// todas las propiedades sean obligatorias: truth también, con null en las de opciones
 const GROQ_SCHEMA = {
   ...RESPONSE_SCHEMA,
   additionalProperties: false,
@@ -77,6 +77,10 @@ const GROQ_SCHEMA = {
           ...RESPONSE_SCHEMA.properties.questions.items.required,
           'truth',
         ],
+        properties: {
+          ...RESPONSE_SCHEMA.properties.questions.items.properties,
+          truth: { type: ['boolean', 'null'] },
+        },
         additionalProperties: false,
       },
     },
@@ -88,7 +92,7 @@ const aiQuestionSchema = z.object({
   statement: z.string(),
   options: z.array(z.string()),
   correctIndexes: z.array(z.number().int()),
-  truth: z.boolean().optional(),
+  truth: z.boolean().nullish(),
   explanation: z.string().optional(),
 })
 
@@ -150,6 +154,9 @@ export const buildPrompt = (
     `A partir del temario que te da el usuario, crea exactamente ${count} preguntas tipo test.`,
     answers,
     'correctIndexes son las posiciones (empezando en 0) de las opciones correctas.',
+    ...(type === 'true-false'
+      ? []
+      : ['En las preguntas de opciones, truth es null.']),
     'Usa solo información del temario, no repitas preguntas y reparte las preguntas por todo el contenido.',
     'Enunciados y opciones concisos. Explicación de una sola frase (máximo 150 caracteres).',
     'Añade un título corto (máximo 60 caracteres) para el test.',
@@ -192,14 +199,15 @@ export const toQuestions = (
       : {}
 
     // Verdadero o falso: sin opciones y con truth. En un test mixto se reconoce por eso mismo
-    const isTrueFalse = q.truth !== undefined && options.length === 0
+    const truth = q.truth ?? undefined
+    const isTrueFalse = truth !== undefined && options.length === 0
     if (type === 'true-false' || (type === 'mixed' && isTrueFalse)) {
-      if (q.truth === undefined) continue
+      if (truth === undefined) continue
       questions.push({
         id: questions.length + 1,
         statement,
         type: 'true-false',
-        correct: q.truth,
+        correct: truth,
         ...explanation,
       })
       continue
