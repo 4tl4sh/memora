@@ -6,6 +6,7 @@ import appCss from '../styles.css?url'
 // Las mismas fuentes que declara fonts.css: se precargan para no esperar al CSS
 import interFont from '../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url'
 import bricolageFont from '../../node_modules/@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url'
+import { NotFound } from '#/components/layout/NotFound'
 import { preferencesScript } from '#/hooks/use-preferences'
 
 const preloadFont = (href: string) => ({
@@ -50,6 +51,7 @@ export const Route = createRootRoute({
     ],
   }),
   shellComponent: RootDocument,
+  notFoundComponent: NotFound,
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {

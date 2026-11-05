@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { subjectSchema } from '@tfm/types'
 import type { Subject, Test } from '@tfm/types'
 
 import { ConfirmDeleteDialog } from '#/components/home/ConfirmDeleteDialog'
@@ -20,19 +21,32 @@ const normalize = (text: string) =>
     .toLowerCase()
     .trim()
 
-const SUBJECTS = Object.keys(SUBJECT_LABELS) as Subject[]
+const SUBJECTS = subjectSchema.options
 
 // Etiqueta de filtro: botón conmutable que se pinta según aria-pressed
 const tagClass =
   'cursor-pointer rounded-full border border-neutral-300 px-4 py-1.5 text-sm font-semibold text-neutral-800 transition hover:border-marca-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 aria-pressed:border-marca-600 aria-pressed:bg-marca-600 aria-pressed:text-neutral-0 dark:border-neutral-700 dark:text-neutral-100 dark:aria-pressed:border-marca-400 dark:aria-pressed:bg-marca-400 dark:aria-pressed:text-marca-950'
 
+interface TestsPanelProps {
+  user: SessionUser
+  // Los filtros viven en la URL (?materia=…&q=…): la ruta los lee y los pasa
+  subjectFilter: Subject | null
+  query: string
+  onSubjectFilterChange: (subject: Subject | null) => void
+  onQueryChange: (query: string) => void
+}
+
 // Panel del usuario con sesión iniciada: la lista de sus tests
-export function TestsPanel({ user }: { user: SessionUser }) {
+export function TestsPanel({
+  user,
+  subjectFilter,
+  query,
+  onSubjectFilterChange,
+  onQueryChange,
+}: TestsPanelProps) {
   const tests = useUserTests(user.id)
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
-  const [subjectFilter, setSubjectFilter] = useState<Subject | null>(null)
-  const [query, setQuery] = useState('')
   const [toDelete, setToDelete] = useState<Test | null>(null)
 
   // Solo se ofrecen las materias que tiene algún test, en el orden de SUBJECT_LABELS
@@ -108,7 +122,7 @@ export function TestsPanel({ user }: { user: SessionUser }) {
               <input
                 type="search"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => onQueryChange(e.target.value)}
                 aria-label="Buscar test por título"
                 placeholder="Buscar por título…"
                 className={`${inputBaseClass} pr-4 pl-11`}
@@ -122,7 +136,7 @@ export function TestsPanel({ user }: { user: SessionUser }) {
               <button
                 type="button"
                 aria-pressed={activeFilter === null}
-                onClick={() => setSubjectFilter(null)}
+                onClick={() => onSubjectFilterChange(null)}
                 className={tagClass}
               >
                 Todos
@@ -133,7 +147,9 @@ export function TestsPanel({ user }: { user: SessionUser }) {
                   type="button"
                   aria-pressed={activeFilter === subject}
                   onClick={() =>
-                    setSubjectFilter(activeFilter === subject ? null : subject)
+                    onSubjectFilterChange(
+                      activeFilter === subject ? null : subject,
+                    )
                   }
                   className={tagClass}
                 >
