@@ -240,7 +240,9 @@ export function CreateTestDialog({ open, onClose }: CreateTestDialogProps) {
                 <form.Field name="count">
                   {(field) => (
                     <fieldset disabled={loading}>
-                      <legend className={legendClass}>Número de preguntas</legend>
+                      <legend className={legendClass}>
+                        Número de preguntas
+                      </legend>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {QUESTION_COUNTS.map((n) => (
                           <label key={n} className={radioClass}>

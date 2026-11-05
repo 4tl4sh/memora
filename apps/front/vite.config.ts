@@ -26,7 +26,9 @@ const config = defineConfig(({ mode }) => {
         // polyfills de Node (DOMMatrix…) y falla al leer el PDF
         traceDeps: ['pdf-parse*'],
         // Cabecera para que Google no indexe ninguna ruta (tampoco las estáticas)
-        routeRules: { '/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } } },
+        routeRules: {
+          '/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
+        },
       }),
       tailwindcss(),
       tanstackStart(),

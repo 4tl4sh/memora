@@ -62,8 +62,8 @@ function TestPage() {
                     No encontramos este test
                   </h1>
                   <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-400">
-                    Puede que lo hayas borrado, que se creara en otro
-                    navegador o que pertenezca a otra cuenta.
+                    Puede que lo hayas borrado, que se creara en otro navegador
+                    o que pertenezca a otra cuenta.
                   </p>
                   <Link
                     to="/studia/private/"

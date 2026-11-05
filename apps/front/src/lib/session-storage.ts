@@ -76,4 +76,5 @@ export const clearUser = () => {
 }
 
 // En el servidor no hay sesión: se pinta sin usuario y se corrige al hidratar
-export const useUser = () => useSyncExternalStore(subscribe, readUser, () => null)
+export const useUser = () =>
+  useSyncExternalStore(subscribe, readUser, () => null)

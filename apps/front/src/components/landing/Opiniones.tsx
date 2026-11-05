@@ -50,7 +50,7 @@ export function Opiniones() {
             </figure>
           </li>
           <li>
-            <p className="flex h-full flex-col justify-center rounded-3xl p-6 sm:p-8 bg-marca-900 shadow-sm">
+            <p className="flex h-full flex-col justify-center rounded-3xl bg-marca-900 p-6 shadow-sm sm:p-8">
               <span className="font-display text-5xl font-bold text-chispa-300">
                 4,8/5
               </span>{' '}
@@ -60,7 +60,7 @@ export function Opiniones() {
             </p>
           </li>
           <li>
-            <p className="flex h-full flex-col justify-center rounded-3xl p-6 sm:p-8 bg-chispa-300 shadow-sm">
+            <p className="flex h-full flex-col justify-center rounded-3xl bg-chispa-300 p-6 shadow-sm sm:p-8">
               <span className="font-display text-5xl font-bold text-neutral-950">
                 +20.000
               </span>{' '}

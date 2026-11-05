@@ -73,7 +73,11 @@ export function ConfirmDeleteDialog({
           >
             Cancelar
           </button>
-          <button type="button" onClick={onConfirm} className={dangerButtonClass}>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className={dangerButtonClass}
+          >
             Borrar
           </button>
         </div>

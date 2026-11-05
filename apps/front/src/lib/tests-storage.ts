@@ -96,10 +96,7 @@ export const useUserTests = (ownerId: Test['ownerId'] | undefined) => {
 }
 
 // Un test por id; undefined si no existe, es de otro usuario o aún no se ha hidratado
-export const useTest = (
-  id: Test['id'],
-  ownerId: Test['ownerId'] | undefined,
-) =>
+export const useTest = (id: Test['id'], ownerId: Test['ownerId'] | undefined) =>
   useTests().find(
     (t) => t.id === id && ownerId !== undefined && t.ownerId === ownerId,
   )

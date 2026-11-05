@@ -78,7 +78,10 @@ export function SiteHeader({
             Studia
           </a>
           {navLinks.length > 0 && (
-            <nav aria-label="Principal" className="hidden lg:col-start-2 lg:block">
+            <nav
+              aria-label="Principal"
+              className="hidden lg:col-start-2 lg:block"
+            >
               <ul className="flex items-center gap-1">
                 {navLinks.map((link) => (
                   <li key={link.label}>
@@ -112,7 +115,7 @@ export function SiteHeader({
               aria-expanded={menuOpen}
               aria-controls="menu-movil"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="group grid size-10 place-items-center rounded-full border border-neutral-300 bg-neutral-0 text-neutral-900 transition hover:border-marca-400 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:text-marca-300 lg:hidden"
+              className="group grid size-10 place-items-center rounded-full border border-neutral-300 bg-neutral-0 text-neutral-900 transition hover:border-marca-400 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 lg:hidden dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:text-marca-300"
             >
               <MenuIcon className="size-5 group-aria-expanded:hidden" />
               <CloseIcon className="hidden size-5 group-aria-expanded:block" />

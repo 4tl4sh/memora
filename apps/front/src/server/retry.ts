@@ -6,7 +6,10 @@
 export const RETRY_DELAYS_MS = [500, 1000, 2000]
 
 const statusOf = (err: unknown): number | undefined =>
-  err && typeof err === 'object' && 'status' in err && typeof err.status === 'number'
+  err &&
+  typeof err === 'object' &&
+  'status' in err &&
+  typeof err.status === 'number'
     ? err.status
     : undefined
 
@@ -40,7 +43,10 @@ const wait = (ms: number, signal?: AbortSignal) =>
 // cada vez el doble (500 ms, 1 s, 2 s). Si se cancela, deja de reintentar.
 export const withRetry = async <T>(
   fn: () => Promise<T>,
-  { delays = RETRY_DELAYS_MS, signal }: { delays?: number[]; signal?: AbortSignal } = {},
+  {
+    delays = RETRY_DELAYS_MS,
+    signal,
+  }: { delays?: number[]; signal?: AbortSignal } = {},
 ): Promise<T> => {
   for (let attempt = 0; ; attempt++) {
     try {
@@ -48,7 +54,10 @@ export const withRetry = async <T>(
     } catch (err) {
       const delay = delays[attempt]
       if (delay === undefined || !isRetryable(err) || signal?.aborted) throw err
-      console.warn(`Reintento ${attempt + 1} en ${delay} ms`, statusOf(err) ?? err)
+      console.warn(
+        `Reintento ${attempt + 1} en ${delay} ms`,
+        statusOf(err) ?? err,
+      )
       await wait(delay, signal)
     }
   }

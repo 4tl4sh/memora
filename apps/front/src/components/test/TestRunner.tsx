@@ -5,7 +5,10 @@ import type { Answer, Question, Test } from '@tfm/types'
 
 import { ArrowLeftIcon, CheckIcon, CloseIcon } from '#/components/icons'
 import { SUBJECT_LABELS } from '#/components/landing/data'
-import { primaryButtonClass, secondaryButtonClass } from '#/components/ui/buttons'
+import {
+  primaryButtonClass,
+  secondaryButtonClass,
+} from '#/components/ui/buttons'
 import { cn } from '#/lib/utils'
 import { ResultDialog } from './ResultDialog'
 
@@ -23,7 +26,8 @@ const reviewRightClass =
 const reviewWrongClass =
   'border-fallo-500 bg-fallo-50 dark:border-fallo-500 dark:bg-fallo-950/40'
 
-const inputClass = 'mt-0.5 size-4 shrink-0 accent-marca-600 dark:accent-marca-400'
+const inputClass =
+  'mt-0.5 size-4 shrink-0 accent-marca-600 dark:accent-marca-400'
 
 // Una pregunta múltiple sin ninguna casilla marcada cuenta como sin responder
 const isAnswered = (given: Given | undefined) =>
@@ -49,7 +53,9 @@ export function TestRunner({ test }: { test: Test }) {
   const [reviewing, setReviewing] = useState(false)
 
   const total = test.questions.length
-  const answered = test.questions.filter((q) => isAnswered(answers[q.id])).length
+  const answered = test.questions.filter((q) =>
+    isAnswered(answers[q.id]),
+  ).length
   const allAnswered = total > 0 && answered === total
 
   const answer = (id: Question['id'], given: Given) =>
@@ -182,7 +188,9 @@ export function TestRunner({ test }: { test: Test }) {
                         {isRight ? 'Acertada' : 'Fallada'}
                       </span>
                     ) : (
-                      <span className="font-normal">{hints[question.type]}</span>
+                      <span className="font-normal">
+                        {hints[question.type]}
+                      </span>
                     )}
                   </span>
                   <span className="mt-2 block font-semibold text-pretty text-neutral-950 dark:text-neutral-0">
@@ -235,7 +243,9 @@ export function TestRunner({ test }: { test: Test }) {
                             ? cn(
                                 reviewOptionClass,
                                 review.right && reviewRightClass,
-                                review.picked && !review.right && reviewWrongClass,
+                                review.picked &&
+                                  !review.right &&
+                                  reviewWrongClass,
                               )
                             : optionClass
                         }

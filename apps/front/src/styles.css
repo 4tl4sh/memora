@@ -1,6 +1,6 @@
 /* Estilos base de Studia para toda la aplicación (tokens, fuentes, temas y modo oscuro) */
-@import "tailwindcss";
-@import "./fonts.css";
+@import 'tailwindcss';
+@import './fonts.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -80,8 +80,8 @@
   --color-neutral-1000: oklch(0 0 0);
 
   --font-display:
-    "Bricolage Grotesque Variable", "Inter Variable", system-ui, sans-serif;
-  --font-sans: "Inter Variable", system-ui, -apple-system, sans-serif;
+    'Bricolage Grotesque Variable', 'Inter Variable', system-ui, sans-serif;
+  --font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
 
   --animate-aparecer: aparecer 0.6s ease-out both;
   --animate-flotar: flotar 5s ease-in-out infinite;
@@ -110,7 +110,7 @@
 /* Tailwind v4 deja los botones con cursor por defecto: se recupera la manita */
 @layer base {
   button:not(:disabled),
-  [role="button"]:not(:disabled),
+  [role='button']:not(:disabled),
   summary {
     cursor: pointer;
   }
@@ -118,7 +118,7 @@
 
 /* Temas: solo se redefine la escala marca-*; va en base porque base gana a theme */
 @layer base {
-  [data-theme="klein"] {
+  [data-theme='klein'] {
     --color-marca-50: oklch(0.982 0.008 264);
     --color-marca-100: oklch(0.958 0.019 264);
     --color-marca-200: oklch(0.92 0.037 264);
@@ -131,7 +131,7 @@
     --color-marca-900: oklch(0.306 0.162 264);
     --color-marca-950: oklch(0.221 0.113 264);
   }
-  [data-theme="amarillo"] {
+  [data-theme='amarillo'] {
     --color-marca-50: oklch(0.981 0.028 95);
     --color-marca-100: oklch(0.957 0.056 95);
     --color-marca-200: oklch(0.919 0.096 95);

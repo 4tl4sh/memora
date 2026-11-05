@@ -22,8 +22,7 @@ export interface Registration {
 }
 
 export type RegisterResult =
-  | { ok: true; user: StoredUser }
-  | { ok: false; error: 'email-taken' }
+  { ok: true; user: StoredUser } | { ok: false; error: 'email-taken' }
 
 const EMPTY: StoredUser[] = []
 

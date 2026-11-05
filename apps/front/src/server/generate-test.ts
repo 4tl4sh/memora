@@ -114,7 +114,11 @@ const TRUE_FALSE_ANSWER = `el enunciado es una afirmación, options es exactamen
   TRUE_FALSE_OPTIONS,
 )} y correctIndexes es [0] si la afirmación es verdadera o [1] si es falsa`
 
-const buildPrompt = (count: number, type: TestQuestionType, subject: Subject) => {
+const buildPrompt = (
+  count: number,
+  type: TestQuestionType,
+  subject: Subject,
+) => {
   let answers: string
   if (type === 'mixed') {
     // Reparto en tres: lo que sobra va primero a simples y luego a múltiples
@@ -158,9 +162,12 @@ export const resolveType = (
   correct: number,
 ): QuestionType | null => {
   let resolved: QuestionType | null = null
-  if (options === TRUE_FALSE_OPTIONS.length && correct === 1) resolved = 'true-false'
-  else if (options === OPTIONS_PER_QUESTION && correct === 1) resolved = 'single'
-  else if (options === OPTIONS_PER_QUESTION && correct >= 2) resolved = 'multiple'
+  if (options === TRUE_FALSE_OPTIONS.length && correct === 1)
+    resolved = 'true-false'
+  else if (options === OPTIONS_PER_QUESTION && correct === 1)
+    resolved = 'single'
+  else if (options === OPTIONS_PER_QUESTION && correct >= 2)
+    resolved = 'multiple'
   return resolved && (type === 'mixed' || type === resolved) ? resolved : null
 }
 
@@ -174,7 +181,10 @@ const trueFalseValue = (option: string): boolean | null => {
 }
 
 // La IA puede equivocarse: se descartan las preguntas mal formadas
-export const toQuestions = (raw: unknown[], type: TestQuestionType): Question[] => {
+export const toQuestions = (
+  raw: unknown[],
+  type: TestQuestionType,
+): Question[] => {
   const questions: Question[] = []
   for (const item of raw) {
     const parsed = aiQuestionSchema.safeParse(item)
@@ -192,9 +202,7 @@ export const toQuestions = (raw: unknown[], type: TestQuestionType): Question[] 
     const base = {
       id: questions.length + 1,
       statement,
-      ...(q.explanation?.trim()
-        ? { explanation: q.explanation.trim() }
-        : {}),
+      ...(q.explanation?.trim() ? { explanation: q.explanation.trim() } : {}),
     }
     if (questionType === 'true-false') {
       const values = options.map(trueFalseValue)
@@ -206,7 +214,12 @@ export const toQuestions = (raw: unknown[], type: TestQuestionType): Question[] 
         correct: values[indexes[0]] === true,
       })
     } else if (questionType === 'single') {
-      questions.push({ ...base, options, type: questionType, correctIndex: indexes[0] })
+      questions.push({
+        ...base,
+        options,
+        type: questionType,
+        correctIndex: indexes[0],
+      })
     } else {
       questions.push({
         ...base,
@@ -227,9 +240,12 @@ const aiErrorMessage = (err: unknown, keyName: string) => {
     return 'Se ha alcanzado el límite gratuito de la IA. Prueba de nuevo en un minuto.'
   // Gemini responde 400 con una clave inválida; en Groq un 400 es otro fallo
   const badKey =
-    status === 401 || status === 403 || (status === 400 && keyName === API_KEYS.gemini)
+    status === 401 ||
+    status === 403 ||
+    (status === 400 && keyName === API_KEYS.gemini)
   if (badKey) return `La clave de la IA no es válida. Revisa ${keyName}.`
-  if (status === 503) return 'La IA está saturada ahora mismo. Inténtalo de nuevo.'
+  if (status === 503)
+    return 'La IA está saturada ahora mismo. Inténtalo de nuevo.'
   return 'La IA no ha podido generar el test. Inténtalo de nuevo.'
 }
 
@@ -290,7 +306,10 @@ const callGroq = async (
       model,
       messages: [
         { role: 'system', content: system },
-        { role: 'user', content: `Temario:\n\n${text.slice(0, MAX_GROQ_TEXT_CHARS)}` },
+        {
+          role: 'user',
+          content: `Temario:\n\n${text.slice(0, MAX_GROQ_TEXT_CHARS)}`,
+        },
       ],
       response_format: {
         type: 'json_schema',
@@ -299,7 +318,9 @@ const callGroq = async (
       temperature: 0.4,
       max_completion_tokens: MAX_OUTPUT_TOKENS,
       // Prioriza la velocidad: el mínimo razonamiento antes de responder
-      ...(isGptOss ? { reasoning_effort: 'low', include_reasoning: false } : {}),
+      ...(isGptOss
+        ? { reasoning_effort: 'low', include_reasoning: false }
+        : {}),
     }),
   })
   if (!res.ok) throw new AiHttpError(res.status, await res.text())
@@ -313,57 +334,66 @@ const callGroq = async (
 // Al navegador solo vuelven las preguntas; ni el texto del PDF ni la API key.
 export const generateTest = createServerFn({ method: 'POST' })
   .validator((data: FormData) => {
-    if (!(data instanceof FormData)) throw new Error('Formato de petición no válido')
+    if (!(data instanceof FormData))
+      throw new Error('Formato de petición no válido')
     // Las mismas reglas que el formulario (lib/schemas.ts): no hay que fiarse del navegador
     const result = generateTestInputSchema.safeParse(Object.fromEntries(data))
     if (!result.success)
       throw new Error(result.error.issues[0]?.message ?? 'Petición no válida')
     return result.data
   })
-  .handler(async ({ data: { file, count, type, subject, model: provider } }) => {
-    const keyName = API_KEYS[provider]
-    const apiKey = process.env[keyName]
-    if (!apiKey) throw new Error(`Falta configurar ${keyName} en el servidor`)
+  .handler(
+    async ({ data: { file, count, type, subject, model: provider } }) => {
+      const keyName = API_KEYS[provider]
+      const apiKey = process.env[keyName]
+      if (!apiKey) throw new Error(`Falta configurar ${keyName} en el servidor`)
 
-    let start = Date.now()
-    const { text, pages } = await extractPdfText(file)
-    console.info(`PDF a texto: ${Date.now() - start} ms (${pages} páginas)`)
-    if (!text)
-      throw new Error('El PDF no tiene texto seleccionable (¿es un documento escaneado?)')
+      let start = Date.now()
+      const { text, pages } = await extractPdfText(file)
+      console.info(`PDF a texto: ${Date.now() - start} ms (${pages} páginas)`)
+      if (!text)
+        throw new Error(
+          'El PDF no tiene texto seleccionable (¿es un documento escaneado?)',
+        )
 
-    const system = buildPrompt(count, type, subject)
-    const call = provider === 'groq' ? callGroq : callGemini
-    let raw: string | undefined
-    start = Date.now()
-    // Si el usuario cancela, el navegador corta la petición y llega aquí como abort
-    const cancelled = getRequest().signal
-    try {
-      // Cada intento tiene su propio tiempo máximo; se reintenta ante 429, 5xx o fallo de red
-      const result = await withRetry(
-        () =>
-          call(
-            apiKey,
-            system,
-            text,
-            AbortSignal.any([cancelled, AbortSignal.timeout(AI_TIMEOUT_MS)]),
-          ),
-        { signal: cancelled },
-      )
-      raw = result.raw
-      console.info(`${provider} (${result.model}): ${Date.now() - start} ms`)
-    } catch (err) {
-      if (cancelled.aborted) throw new Error('Generación cancelada')
-      console.error(`Error de ${provider}`, err)
-      if (isAbortError(err))
-        throw new Error('La IA ha tardado demasiado en responder. Inténtalo de nuevo.')
-      throw new Error(aiErrorMessage(err, keyName))
-    }
+      const system = buildPrompt(count, type, subject)
+      const call = provider === 'groq' ? callGroq : callGemini
+      let raw: string | undefined
+      start = Date.now()
+      // Si el usuario cancela, el navegador corta la petición y llega aquí como abort
+      const cancelled = getRequest().signal
+      try {
+        // Cada intento tiene su propio tiempo máximo; se reintenta ante 429, 5xx o fallo de red
+        const result = await withRetry(
+          () =>
+            call(
+              apiKey,
+              system,
+              text,
+              AbortSignal.any([cancelled, AbortSignal.timeout(AI_TIMEOUT_MS)]),
+            ),
+          { signal: cancelled },
+        )
+        raw = result.raw
+        console.info(`${provider} (${result.model}): ${Date.now() - start} ms`)
+      } catch (err) {
+        if (cancelled.aborted) throw new Error('Generación cancelada')
+        console.error(`Error de ${provider}`, err)
+        if (isAbortError(err))
+          throw new Error(
+            'La IA ha tardado demasiado en responder. Inténtalo de nuevo.',
+          )
+        throw new Error(aiErrorMessage(err, keyName))
+      }
 
-    const parsed = parseAiResponse(raw)
-    const questions = toQuestions(parsed.questions, type).slice(0, count)
-    if (questions.length === 0)
-      throw new Error('La IA no ha devuelto preguntas válidas. Inténtalo de nuevo.')
+      const parsed = parseAiResponse(raw)
+      const questions = toQuestions(parsed.questions, type).slice(0, count)
+      if (questions.length === 0)
+        throw new Error(
+          'La IA no ha devuelto preguntas válidas. Inténtalo de nuevo.',
+        )
 
-    const title = parsed.title?.trim().slice(0, 80) ?? ''
-    return { title, pages, questions }
-  })
+      const title = parsed.title?.trim().slice(0, 80) ?? ''
+      return { title, pages, questions }
+    },
+  )
