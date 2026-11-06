@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 
-import { CloseIcon, LogoIcon, MenuIcon } from '#/components/icons'
+import { CloseIcon, MenuIcon } from '#/components/icons'
 import { THEMES, usePreferences } from '#/hooks/use-preferences'
 import { cn } from '#/lib/utils'
+import { Logo } from './Logo'
 import { ThemeMenu } from './ThemeMenu'
 import { landingLinks, loginLink } from './nav-links'
 import type { NavLink } from './nav-links'
@@ -73,12 +74,9 @@ export function SiteHeader({
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-x-6 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:px-8">
           <a
             href={homeHref}
-            className="flex items-center gap-2 justify-self-start rounded-lg font-display text-xl font-extrabold tracking-tight text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-0"
+            className="justify-self-start rounded-lg text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-0"
           >
-            <span className="grid size-9 place-items-center rounded-xl bg-chispa-300 text-neutral-900">
-              <LogoIcon className="size-5" />
-            </span>
-            Studia
+            <Logo className="h-5.5 w-auto sm:h-6" />
           </a>
           {navLinks.length > 0 && (
             <nav

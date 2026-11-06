@@ -1,4 +1,4 @@
-import { LogoIcon } from '#/components/icons'
+import { Logo } from './Logo'
 import { landingLinks } from './nav-links'
 import type { NavLink } from './nav-links'
 import { Newsletter } from './Newsletter'
@@ -12,12 +12,7 @@ export function SiteFooter({ links = landingLinks }: { links?: NavLink[] }) {
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <p className="flex items-center gap-2 font-display text-xl font-extrabold tracking-tight text-neutral-0">
-              <span className="grid size-9 place-items-center rounded-xl bg-chispa-300 text-neutral-900">
-                <LogoIcon className="size-5" />
-              </span>
-              Studia
-            </p>
+            <Logo className="h-5.5 w-auto text-neutral-0 sm:h-6" />
             <p className="mt-4 max-w-xs text-sm text-pretty">
               Convierte tu temario en tests y repásalos en el móvil hasta que te
               lo sepas.

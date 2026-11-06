@@ -1,4 +1,3 @@
-import { SparklesIcon } from '#/components/icons'
 import { heroStats } from './data'
 import { StartAction } from './StartAction'
 import type { StartProps } from './StartAction'
@@ -15,13 +14,9 @@ export function Hero(startProps: StartProps) {
       />
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 md:grid-cols-2 lg:px-8">
         <div>
-          <p className="inline-flex items-center gap-2 rounded-full bg-chispa-200 px-3 py-1 text-xs font-semibold text-neutral-900 motion-safe:animate-aparecer">
-            <SparklesIcon className="size-4" />
-            Ahora con generación por IA
-          </p>
           <h1
             id="titulo-hero"
-            className="mt-5 font-display text-4xl font-extrabold tracking-tight text-balance text-neutral-950 motion-safe:animate-aparecer motion-safe:[animation-delay:100ms] sm:text-5xl lg:text-6xl dark:text-neutral-0"
+            className="font-display text-4xl font-extrabold tracking-tight text-balance text-neutral-950 motion-safe:animate-aparecer motion-safe:[animation-delay:100ms] sm:text-5xl lg:text-6xl dark:text-neutral-0"
           >
             Convierte tu temario en tests
           </h1>
