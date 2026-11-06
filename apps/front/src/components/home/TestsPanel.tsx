@@ -102,7 +102,7 @@ export function TestsPanel({
       </div>
 
       {tests.length === 0 ? (
-        <div className="mt-4 grid min-h-72 flex-1 place-items-center rounded-3xl border-2 border-dashed border-neutral-300 bg-neutral-0/60 p-8 text-center dark:border-neutral-700 dark:bg-neutral-900/60">
+        <div className="mt-4 grid h-104 place-items-center rounded-3xl border-2 border-dashed border-neutral-300 bg-neutral-0/60 p-8 text-center md:h-auto md:min-h-72 md:flex-1 dark:border-neutral-700 dark:bg-neutral-900/60">
           <div className="flex flex-col items-center">
             <SparklesIcon className="size-8 text-marca-600 dark:text-marca-300" />
             <p className="mt-3 font-display text-xl font-bold text-neutral-950 dark:text-neutral-0">
