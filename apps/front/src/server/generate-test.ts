@@ -4,11 +4,13 @@ import { getRequest } from '@tanstack/react-start/server'
 import { generateTestInputSchema } from '#/lib/schemas'
 import {
   AI_TIMEOUT_MS,
+  OPENAI_TIMEOUT_MS,
   API_KEYS,
   aiErrorMessage,
   buildPrompt,
   callGemini,
   callGroq,
+  callOpenAI,
   parseAiResponse,
   toQuestions,
 } from '#/server/ai'
@@ -42,7 +44,11 @@ export const generateTest = createServerFn({ method: 'POST' })
         )
 
       const system = buildPrompt(count, type, subject)
-      const call = provider === 'groq' ? callGroq : callGemini
+      const call = { gemini: callGemini, groq: callGroq, openai: callOpenAI }[
+        provider
+      ]
+      const timeoutMs =
+        provider === 'openai' ? OPENAI_TIMEOUT_MS : AI_TIMEOUT_MS
       let raw: string | undefined
       start = Date.now()
       // Si el usuario cancela, el navegador corta la petición y llega aquí como abort
@@ -55,7 +61,7 @@ export const generateTest = createServerFn({ method: 'POST' })
               apiKey,
               system,
               text,
-              AbortSignal.any([cancelled, AbortSignal.timeout(AI_TIMEOUT_MS)]),
+              AbortSignal.any([cancelled, AbortSignal.timeout(timeoutMs)]),
             ),
           { signal: cancelled },
         )

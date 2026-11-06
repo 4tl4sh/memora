@@ -20,6 +20,11 @@ const MAX_TEXT_CHARS = 60_000
 // (~5k tokens), que además hace que responda antes
 const MAX_GROQ_TEXT_CHARS = 20_000
 
+// OpenAI (gpt-4.1-mini admite 1M de tokens): ~800k tokens como máximo, que deja margen
+// para el prompt y la respuesta. Cabe un libro de 1.000 páginas; un texto más largo (la
+// Biblia entera, ~4M de caracteres) se corta y solo se pregunta por la parte inicial
+const MAX_OPENAI_TEXT_CHARS = 3_000_000
+
 // Tope de respuesta: 15 preguntas con explicaciones cortas caben de sobra
 const MAX_OUTPUT_TOKENS = 4096
 
@@ -29,14 +34,22 @@ const DEFAULT_GEMINI_MODEL = 'gemini-flash-lite-latest'
 // gpt-oss-20b: de los más rápidos de Groq y admite JSON con esquema estricto
 const DEFAULT_GROQ_MODEL = 'openai/gpt-oss-20b'
 
+// gpt-4.1-mini: ventana de 1M de tokens, barato y admite JSON con esquema estricto
+const DEFAULT_OPENAI_MODEL = 'gpt-4.1-mini'
+
 // Tiempo máximo de cada llamada a la IA: si no responde, se corta en vez de esperar sin fin
 export const AI_TIMEOUT_MS = 60_000
 
+// Con tanto texto OpenAI tarda más en empezar a responder
+export const OPENAI_TIMEOUT_MS = 180_000
+
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
+const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
 
 export const API_KEYS: Record<AiModel, string> = {
   gemini: 'GEMINI_API_KEY',
   groq: 'GROQ_API_KEY',
+  openai: 'OPENAI_API_KEY',
 }
 
 // Lo que se pide a la IA: correctIndexes en las de opciones y truth en las de verdadero/falso
@@ -62,9 +75,9 @@ const RESPONSE_SCHEMA = {
   required: ['title', 'questions'],
 }
 
-// El modo estricto de Groq exige additionalProperties: false en cada objeto y que
+// El modo estricto de Groq y de OpenAI exige additionalProperties: false en cada objeto y que
 // todas las propiedades sean obligatorias: truth también, con null en las de opciones
-const GROQ_SCHEMA = {
+const STRICT_SCHEMA = {
   ...RESPONSE_SCHEMA,
   additionalProperties: false,
   properties: {
@@ -243,7 +256,7 @@ export const aiErrorMessage = (err: unknown, keyName: string) => {
     err && typeof err === 'object' && 'status' in err ? err.status : undefined
   if (status === 429)
     return 'Se ha alcanzado el límite gratuito de la IA. Prueba de nuevo en un minuto.'
-  // Gemini responde 400 con una clave inválida; en Groq un 400 es otro fallo
+  // Gemini responde 400 con una clave inválida; en Groq y OpenAI un 400 es otro fallo
   const badKey =
     status === 401 ||
     status === 403 ||
@@ -318,7 +331,7 @@ export const callGroq = async (
       ],
       response_format: {
         type: 'json_schema',
-        json_schema: { name: 'test', strict: isGptOss, schema: GROQ_SCHEMA },
+        json_schema: { name: 'test', strict: isGptOss, schema: STRICT_SCHEMA },
       },
       temperature: 0.4,
       max_completion_tokens: MAX_OUTPUT_TOKENS,
@@ -326,6 +339,45 @@ export const callGroq = async (
       ...(isGptOss
         ? { reasoning_effort: 'low', include_reasoning: false }
         : {}),
+    }),
+  })
+  if (!res.ok) throw new AiHttpError(res.status, await res.text())
+  const json = (await res.json()) as {
+    choices?: { message?: { content?: string } }[]
+  }
+  return { model, raw: json.choices?.[0]?.message?.content }
+}
+
+// OpenAI: misma API de chat que Groq, con el esquema estricto y sin SDK
+export const callOpenAI = async (
+  apiKey: string,
+  system: string,
+  text: string,
+  signal: AbortSignal,
+) => {
+  const model = process.env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL
+  const res = await fetch(OPENAI_URL, {
+    method: 'POST',
+    signal,
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: system },
+        {
+          role: 'user',
+          content: `Temario:\n\n${text.slice(0, MAX_OPENAI_TEXT_CHARS)}`,
+        },
+      ],
+      response_format: {
+        type: 'json_schema',
+        json_schema: { name: 'test', strict: true, schema: STRICT_SCHEMA },
+      },
+      temperature: 0.4,
+      max_completion_tokens: MAX_OUTPUT_TOKENS,
     }),
   })
   if (!res.ok) throw new AiHttpError(res.status, await res.text())

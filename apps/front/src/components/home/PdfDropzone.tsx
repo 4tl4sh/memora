@@ -3,6 +3,7 @@ import type { DragEvent } from 'react'
 
 import { CloseIcon, FileUpIcon } from '#/components/icons'
 import { iconButtonClass, secondaryButtonClass } from '#/components/ui/buttons'
+import { MAX_PDF_MB } from '#/lib/pdf'
 import { pdfFileSchema } from '#/lib/schemas'
 
 interface PdfDropzoneProps {
@@ -98,7 +99,7 @@ export function PdfDropzone({ file, disabled, onChange }: PdfDropzoneProps) {
           Subir fichero
         </button>
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
-          Solo PDF, hasta 5 MB.
+          Solo PDF, hasta {MAX_PDF_MB} MB.
         </p>
         <input
           ref={inputRef}

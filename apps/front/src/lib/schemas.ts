@@ -4,7 +4,7 @@ import type { PlanId } from '@tfm/types'
 
 import { plans } from '#/components/landing/data'
 import { isValidCardNumber, isValidCvv, isValidExpiry } from '#/lib/card'
-import { MAX_PDF_BYTES, isPdf } from '#/lib/pdf'
+import { MAX_PDF_BYTES, MAX_PDF_MB, isPdf } from '#/lib/pdf'
 
 // Reglas de los formularios en un solo sitio: las usan TanStack Form en el navegador
 // y, en el caso de crear un test, también la server function al recibir la petición
@@ -85,18 +85,22 @@ export const testQuestionTypeSchema = z.enum([
 export type TestQuestionType = z.infer<typeof testQuestionTypeSchema>
 
 // Proveedor de IA que elige el usuario: el prompt y la respuesta son los mismos
-export const aiModelSchema = z.enum(['gemini', 'groq'])
+export const aiModelSchema = z.enum(['gemini', 'groq', 'openai'])
 export type AiModel = z.infer<typeof aiModelSchema>
 
 export const AI_MODELS: { value: AiModel; label: string }[] = [
   { value: 'gemini', label: 'Gemini Flash' },
   { value: 'groq', label: 'Groq' },
+  { value: 'openai', label: 'OpenAI' },
 ]
 
 export const pdfFileSchema = z
   .instanceof(File, { message: 'Sube el PDF con tu temario.' })
   .refine(isPdf, 'El fichero debe ser un PDF.')
-  .refine((file) => file.size <= MAX_PDF_BYTES, 'El PDF no puede superar 5 MB.')
+  .refine(
+    (file) => file.size <= MAX_PDF_BYTES,
+    `El PDF no puede superar ${MAX_PDF_MB} MB.`,
+  )
 
 const questionCountSchema = z
   .number({ message: 'Elige cuántas preguntas quieres.' })

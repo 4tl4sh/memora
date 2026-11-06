@@ -138,7 +138,7 @@ describe('createTestSchema', () => {
 
   it.each([
     ['que no es un PDF', pdf(10, 'foto.png', 'image/png'), 'debe ser un PDF'],
-    ['de más de 5 MB', pdf(5 * 1024 * 1024 + 1), 'no puede superar 5 MB'],
+    ['de más de 30 MB', pdf(30 * 1024 * 1024 + 1), 'no puede superar 30 MB'],
   ])('debería rechazar un fichero %s', (_, file, text) => {
     const result = createTestSchema.safeParse({ ...complete, file })
 
