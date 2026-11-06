@@ -48,7 +48,7 @@ function PrivateLayout() {
           {/* Rejilla tenue que se desvanece enseguida, detrás del contenido */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-40 bg-[linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] mask-[linear-gradient(to_bottom,black,transparent)] bg-size-[24px_24px] text-neutral-950/4 sm:bg-size-[40px_40px] dark:text-neutral-0/5"
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-40 bg-[linear-gradient(to_right,currentColor_1px,transparent_1px),linear-gradient(to_bottom,currentColor_1px,transparent_1px)] mask-[linear-gradient(to_bottom,black,transparent)] bg-size-[24px_24px] text-neutral-950/3 sm:bg-size-[40px_40px] dark:text-neutral-0/4"
           />
           <Outlet />
         </main>

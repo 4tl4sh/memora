@@ -14,8 +14,8 @@ export function SiteFooter({ links = landingLinks }: { links?: NavLink[] }) {
           <div>
             <Logo className="h-5.5 w-auto text-neutral-0 sm:h-6" />
             <p className="mt-4 max-w-xs text-sm text-pretty">
-              Convierte tu temario en tests y repásalos en el móvil hasta que te
-              lo sepas.
+              Sube tus apuntes, conviértelos en tests y repasa en cualquier
+              lugar.
             </p>
             <ul className="mt-6 flex gap-3">
               <li>
