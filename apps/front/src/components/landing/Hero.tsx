@@ -10,7 +10,7 @@ export function Hero(startProps: StartProps) {
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-marca-200/50 blur-3xl dark:bg-marca-700/30"
+        className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-marca-100/50 blur-3xl dark:bg-marca-700/30"
       />
       <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 md:grid-cols-2 md:gap-12 lg:px-8">
         <div>
