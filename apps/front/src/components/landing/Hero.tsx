@@ -6,13 +6,13 @@ export function Hero(startProps: StartProps) {
   return (
     <section
       aria-labelledby="titulo-hero"
-      className="relative overflow-hidden py-16 sm:py-24"
+      className="relative overflow-hidden py-8 sm:py-24"
     >
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-marca-200/50 blur-3xl dark:bg-marca-700/30"
       />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 md:grid-cols-2 lg:px-8">
+      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 md:grid-cols-2 md:gap-12 lg:px-8">
         <div>
           <h1
             id="titulo-hero"
@@ -21,9 +21,8 @@ export function Hero(startProps: StartProps) {
             Convierte tu temario en tests
           </h1>
           <p className="mt-5 max-w-prose text-lg text-pretty text-neutral-600 motion-safe:animate-aparecer motion-safe:[animation-delay:200ms] dark:text-neutral-300">
-            Sube tus apuntes, la IA te propone un test y tú lo repasas en el
-            móvil: en el autobús, en la cola o entre clases. Hasta que te lo
-            sepas.
+            Sube tus apuntes sobre lo que quieras aprender y genera tests con la
+            ayuda de IA para poner a prueba tu conocimiento.
           </p>
           <div className="mt-8 flex flex-col gap-3 motion-safe:animate-aparecer motion-safe:[animation-delay:300ms] sm:flex-row">
             <StartAction
@@ -79,7 +78,7 @@ export function Hero(startProps: StartProps) {
             </div>
           </dl>
         </div>
-        <div className="relative mx-auto w-full max-w-md">
+        <div className="relative order-first mx-auto w-full max-w-xs md:order-none md:max-w-md">
           <img
             src="/img/hero.svg"
             alt="Unos apuntes con frases subrayadas se transforman en un test en el móvil, con una respuesta marcada como correcta."
