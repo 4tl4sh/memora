@@ -71,23 +71,23 @@ export function SiteHeader({
         ref={headerRef}
         className="sticky top-0 z-50 border-b border-neutral-200/70 bg-neutral-50/75 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/75"
       >
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-x-6 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:px-8">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-x-6 px-4 py-3 sm:px-6 lg:grid lg:grid-cols-[auto_1fr_auto] lg:px-8">
           <a
             href={homeHref}
-            className="justify-self-start rounded-lg text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-0"
+            className="justify-self-start rounded-lg text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-50"
           >
             <Logo className="h-5.5 w-auto sm:h-6" />
           </a>
           {navLinks.length > 0 && (
             <nav
               aria-label="Principal"
-              className="hidden lg:col-start-2 lg:block"
+              className="hidden lg:col-start-2 lg:block lg:justify-self-start"
             >
               <ul className="flex items-center gap-1">
                 {navLinks.map((link) => (
                   <li key={link.label}>
                     <a
-                      className="rounded-full px-3 py-2 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-100 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:hover:text-marca-300"
+                      className="rounded-full px-3 py-2 text-sm font-semibold text-neutral-900 transition hover:bg-neutral-100 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:text-neutral-50 dark:hover:bg-neutral-800 dark:hover:text-marca-300"
                       href={link.href}
                     >
                       {link.shortLabel ?? link.label}
