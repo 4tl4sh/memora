@@ -20,10 +20,9 @@ const MAX_TEXT_CHARS = 60_000
 // (~5k tokens), que además hace que responda antes
 const MAX_GROQ_TEXT_CHARS = 20_000
 
-// OpenAI (gpt-4.1-mini admite 1M de tokens): ~800k tokens como máximo, que deja margen
-// para el prompt y la respuesta. Cabe un libro de 1.000 páginas; un texto más largo (la
-// Biblia entera, ~4M de caracteres) se corta y solo se pregunta por la parte inicial
-const MAX_OPENAI_TEXT_CHARS = 3_000_000
+// OpenAI (gpt-4.1-mini admite 1M de tokens): ~380k tokens, unas 600 páginas. Un texto
+// más largo se corta y solo se pregunta por la parte inicial; más texto sube el coste
+const MAX_OPENAI_TEXT_CHARS = 1_500_000
 
 // Tope de respuesta: 15 preguntas con explicaciones cortas caben de sobra
 const MAX_OUTPUT_TOKENS = 4096
@@ -39,9 +38,6 @@ const DEFAULT_OPENAI_MODEL = 'gpt-4.1-mini'
 
 // Tiempo máximo de cada llamada a la IA: si no responde, se corta en vez de esperar sin fin
 export const AI_TIMEOUT_MS = 60_000
-
-// Con tanto texto OpenAI tarda más en empezar a responder
-export const OPENAI_TIMEOUT_MS = 180_000
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions'
