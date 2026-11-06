@@ -36,7 +36,7 @@ function PrivateLayout() {
   return (
     <>
       {/* Cabecera y contenido ocupan justo una pantalla; el pie queda debajo */}
-      <div className="flex min-h-dvh flex-col">
+      <div className="flex min-h-svh flex-col">
         <SiteHeader
           links={[]}
           homeHref="/studia/private/"

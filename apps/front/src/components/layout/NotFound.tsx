@@ -10,7 +10,7 @@ import { primaryButtonClass } from '#/components/ui/buttons'
 export function NotFound() {
   return (
     <>
-      <div className="flex min-h-dvh flex-col">
+      <div className="flex min-h-svh flex-col">
         <SiteHeader links={[]} homeHref="/studia/" />
         <main id="contenido" className="flex flex-1 flex-col">
           <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">

@@ -43,7 +43,7 @@ function TestPage() {
 
   return (
     <>
-      <div className="flex min-h-dvh flex-col">
+      <div className="flex min-h-svh flex-col">
         <SiteHeader
           links={[]}
           homeHref="/studia/private/"
