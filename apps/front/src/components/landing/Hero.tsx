@@ -78,7 +78,7 @@ export function Hero(startProps: StartProps) {
             </div>
           </dl>
         </div>
-        <div className="relative order-first mx-auto w-full max-w-xs md:order-none md:max-w-md">
+        <div className="relative order-first mx-auto w-full max-w-2xs md:order-none md:max-w-md">
           <img
             src="/img/hero.svg"
             alt="Unos apuntes con frases subrayadas se transforman en un test en el móvil, con una respuesta marcada como correcta."
@@ -87,7 +87,7 @@ export function Hero(startProps: StartProps) {
             fetchPriority="high"
             className="w-full"
           />
-          <p className="absolute top-6 right-0 flex items-center gap-3 rounded-2xl border border-neutral-200 bg-neutral-0 p-3 pr-5 shadow-lg shadow-marca-600/25 motion-safe:animate-flotar dark:border-neutral-700 dark:bg-neutral-800">
+          <p className="absolute top-6 right-0 flex origin-top-right scale-85 items-center gap-3 rounded-2xl border border-neutral-200 bg-neutral-0 p-3 pr-5 shadow-lg shadow-marca-600/25 motion-safe:animate-flotar md:scale-100 dark:border-neutral-700 dark:bg-neutral-800">
             <span className="grid size-10 place-items-center rounded-full bg-chispa-300 text-neutral-900">
               <svg
                 className="size-5"
