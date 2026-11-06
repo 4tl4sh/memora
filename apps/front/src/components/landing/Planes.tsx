@@ -1,8 +1,19 @@
+import type { ReactNode } from 'react'
+import type { PlanId } from '@tfm/types'
+
 import { CheckIcon, SparklesIcon } from '#/components/icons'
 import { formatPrice, plans } from './data'
 import type { PlanCard } from './data'
 
-export function Planes() {
+// Botón de cada plan: abre el registro con ese plan marcado si la página lo gestiona
+// (onChoose) o, si no, es un enlace a chooseHref
+export interface ChoosePlanProps {
+  onChoose?: (planId: PlanId) => void
+  chooseHref?: string
+}
+
+export function Planes({ onChoose, chooseHref = '#' }: ChoosePlanProps) {
+  const choose = { onChoose, chooseHref }
   return (
     <section
       id="planes"
@@ -31,9 +42,9 @@ export function Planes() {
               className={plan.featured ? 'mt-4 lg:mt-0' : undefined}
             >
               {plan.featured ? (
-                <FeaturedPlan plan={plan} />
+                <FeaturedPlan plan={plan} {...choose} />
               ) : (
-                <RegularPlan plan={plan} />
+                <RegularPlan plan={plan} {...choose} />
               )}
             </li>
           ))}
@@ -43,7 +54,11 @@ export function Planes() {
   )
 }
 
-function RegularPlan({ plan }: { plan: PlanCard }) {
+function RegularPlan({
+  plan,
+  onChoose,
+  chooseHref,
+}: ChoosePlanProps & { plan: PlanCard }) {
   return (
     <article className="flex h-full flex-col rounded-3xl border border-neutral-200 bg-neutral-50 p-6 sm:p-8 dark:border-neutral-700 dark:bg-neutral-800">
       <h3 className="font-display text-2xl font-bold text-neutral-950 dark:text-neutral-0">
@@ -64,18 +79,24 @@ function RegularPlan({ plan }: { plan: PlanCard }) {
         features={plan.features}
         checkClass="bg-marca-100 text-marca-800 dark:bg-marca-900/60 dark:text-marca-100"
       />
-      <a
-        href="#"
+      <ChooseAction
+        planId={plan.id}
+        onChoose={onChoose}
+        chooseHref={chooseHref}
         className="mt-8 inline-flex w-full items-center justify-center rounded-full border border-neutral-300 bg-neutral-0 px-6 py-3 font-semibold text-neutral-900 transition hover:border-marca-400 hover:text-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:text-marca-300"
       >
         {plan.cta}
         <span className="sr-only">con el plan {plan.name}</span>
-      </a>
+      </ChooseAction>
     </article>
   )
 }
 
-function FeaturedPlan({ plan }: { plan: PlanCard }) {
+function FeaturedPlan({
+  plan,
+  onChoose,
+  chooseHref,
+}: ChoosePlanProps & { plan: PlanCard }) {
   return (
     <article className="relative flex h-full flex-col rounded-3xl bg-marca-900 p-6 text-marca-50 shadow-2xl ring-2 ring-marca-500 sm:p-8 lg:py-12">
       <p className="absolute -top-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-chispa-300 px-4 py-1.5 text-xs font-semibold whitespace-nowrap text-neutral-900">
@@ -96,13 +117,15 @@ function FeaturedPlan({ plan }: { plan: PlanCard }) {
         features={plan.features}
         checkClass="bg-chispa-300 text-neutral-900"
       />
-      <a
-        href="#"
+      <ChooseAction
+        planId={plan.id}
+        onChoose={onChoose}
+        chooseHref={chooseHref}
         className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-chispa-300 px-6 py-3 font-semibold text-neutral-900 transition duration-200 ease-out hover:bg-chispa-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-chispa-300 motion-safe:hover:-translate-y-0.5"
       >
         {plan.cta}
         <span className="sr-only">con el plan {plan.name}</span>
-      </a>
+      </ChooseAction>
     </article>
   )
 }
@@ -127,5 +150,31 @@ function Features({
         </li>
       ))}
     </ul>
+  )
+}
+
+function ChooseAction({
+  planId,
+  onChoose,
+  chooseHref = '#',
+  className,
+  children,
+}: ChoosePlanProps & {
+  planId: PlanId
+  className: string
+  children: ReactNode
+}) {
+  return onChoose ? (
+    <button
+      type="button"
+      onClick={() => onChoose(planId)}
+      className={className}
+    >
+      {children}
+    </button>
+  ) : (
+    <a href={chooseHref} className={className}>
+      {children}
+    </a>
   )
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useForm, useStore } from '@tanstack/react-form'
+import type { PlanId } from '@tfm/types'
 
 import { TextField } from '#/components/auth/TextField'
 import {
@@ -22,6 +23,8 @@ interface RegisterDialogProps {
   onClose: () => void
   onRegister: (user: StoredUser) => void
   onSwitchToLogin: () => void
+  // Plan que aparece marcado al abrir (por defecto, gratis)
+  initialPlan?: PlanId
 }
 
 const defaultValues: RegisterValues = {
@@ -43,6 +46,7 @@ export function RegisterDialog({
   onClose,
   onRegister,
   onSwitchToLogin,
+  initialPlan = 'gratis',
 }: RegisterDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
@@ -82,6 +86,11 @@ export function RegisterDialog({
   const planId = useStore(form.store, (state) => state.values.planId)
   const plan = plans.find((p) => p.id === planId) ?? plans[0]
   const paid = isPaidPlan(planId)
+
+  // Al abrir se marca el plan elegido (el formulario se resetea al cerrar)
+  useEffect(() => {
+    if (open) form.setFieldValue('planId', initialPlan)
+  }, [open, initialPlan, form])
 
   return (
     <dialog

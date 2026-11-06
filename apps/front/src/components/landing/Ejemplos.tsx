@@ -1,8 +1,16 @@
+import type { ReactNode } from 'react'
+
 import { SUBJECT_LABELS, exampleTests } from './data'
 import type { ExampleTest } from './data'
 
-// tryHref: adónde lleva el botón "Probar" de cada ejemplo
-export function Ejemplos({ tryHref = '#' }: { tryHref?: string }) {
+// "Probar" de cada ejemplo: un botón si la página la gestiona (abrir el login) o un
+// enlace a tryHref si no
+export interface TryProps {
+  onTry?: () => void
+  tryHref?: string
+}
+
+export function Ejemplos({ onTry, tryHref = '#' }: TryProps) {
   return (
     <section
       id="ejemplos"
@@ -28,7 +36,7 @@ export function Ejemplos({ tryHref = '#' }: { tryHref?: string }) {
         <ul className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {exampleTests.map((test) => (
             <li key={test.id}>
-              <ExampleCard test={test} tryHref={tryHref} />
+              <ExampleCard test={test} onTry={onTry} tryHref={tryHref} />
             </li>
           ))}
         </ul>
@@ -39,11 +47,9 @@ export function Ejemplos({ tryHref = '#' }: { tryHref?: string }) {
 
 function ExampleCard({
   test,
-  tryHref,
-}: {
-  test: ExampleTest
-  tryHref: string
-}) {
+  onTry,
+  tryHref = '#',
+}: TryProps & { test: ExampleTest }) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-0 shadow-sm transition duration-300 hover:shadow-xl motion-safe:hover:-translate-y-1 dark:border-neutral-700 dark:bg-neutral-800">
       <div className="overflow-hidden">
@@ -91,15 +97,33 @@ function ExampleCard({
               </dd>
             </div>
           </dl>
-          <a
-            href={tryHref}
+          <TryAction
+            onTry={onTry}
+            tryHref={tryHref}
             className="inline-flex items-center justify-center gap-2 rounded-full bg-marca-600 px-4 py-2 text-sm font-semibold text-neutral-0 transition duration-200 ease-out hover:bg-marca-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marca-500 dark:bg-marca-400 dark:text-marca-950 dark:hover:bg-marca-300"
           >
             Probar
             <span className="sr-only">: {test.title}</span>
-          </a>
+          </TryAction>
         </div>
       </div>
     </article>
+  )
+}
+
+function TryAction({
+  onTry,
+  tryHref,
+  className,
+  children,
+}: TryProps & { className: string; children: ReactNode }) {
+  return onTry ? (
+    <button type="button" onClick={onTry} className={className}>
+      {children}
+    </button>
+  ) : (
+    <a href={tryHref} className={className}>
+      {children}
+    </a>
   )
 }

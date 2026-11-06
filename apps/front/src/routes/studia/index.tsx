@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
+import type { PlanId } from '@tfm/types'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
 import { LoginDialog } from '#/components/auth/LoginDialog'
@@ -42,6 +43,7 @@ function Studia() {
   const navigate = useNavigate()
   const [loginOpen, setLoginOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
+  const [registerPlan, setRegisterPlan] = useState<PlanId>('gratis')
   const loginButtonRef = useRef<HTMLButtonElement>(null)
 
   // Tanto al entrar como al registrarse se inicia sesión y se va a la zona privada
@@ -52,8 +54,9 @@ function Studia() {
     navigate({ to: '/studia/private/' })
   }
 
-  const openRegister = () => {
+  const openRegister = (planId: PlanId = 'gratis') => {
     setLoginOpen(false)
+    setRegisterPlan(planId)
     setRegisterOpen(true)
   }
 
@@ -73,6 +76,17 @@ function Studia() {
     ? { startHref: '/studia/private/' }
     : { onStart: () => setLoginOpen(true) }
 
+  // "Probar" abre el login; con sesión lleva a la zona privada
+  const tryProps = user
+    ? { tryHref: '/studia/private/' }
+    : { onTry: () => setLoginOpen(true) }
+
+  // Los planes abren el registro con ese plan marcado; con sesión no hay cambio de plan
+  // todavía, así que llevan a la zona privada
+  const planProps = user
+    ? { chooseHref: '/studia/private/' }
+    : { onChoose: openRegister }
+
   const actions = user ? (
     <UserMenu name={user.name} planId={user.planId} onLogout={logout} />
   ) : (
@@ -80,7 +94,7 @@ function Studia() {
       {/* En móvil no cabe en la barra: va al final del menú (menuAction) */}
       <button
         type="button"
-        onClick={openRegister}
+        onClick={() => openRegister()}
         className={`${primaryButtonClass} hidden sm:inline-flex`}
       >
         Regístrate
@@ -105,7 +119,7 @@ function Studia() {
           !user && (
             <button
               type="button"
-              onClick={openRegister}
+              onClick={() => openRegister()}
               className={`${primaryButtonClass} w-full px-6 py-3 text-base sm:hidden`}
             >
               Regístrate
@@ -115,10 +129,10 @@ function Studia() {
       />
       <main id="contenido">
         <Hero {...startProps} />
-        <Ejemplos />
+        <Ejemplos {...tryProps} />
         <ComoFunciona />
         <Opiniones />
-        <Planes />
+        <Planes {...planProps} />
         <Faq />
         <Cta {...startProps} />
       </main>
@@ -127,13 +141,14 @@ function Studia() {
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         onLogin={enter}
-        onSwitchToRegister={openRegister}
+        onSwitchToRegister={() => openRegister()}
       />
       <RegisterDialog
         open={registerOpen}
         onClose={() => setRegisterOpen(false)}
         onRegister={enter}
         onSwitchToLogin={openLogin}
+        initialPlan={registerPlan}
       />
     </>
   )
